@@ -1,17 +1,20 @@
 import os
 from .logger import WranglerLogger
 
-def get_base_dir(lasso_base_dir = os.getcwd()):
+
+def get_base_dir(lasso_base_dir=os.getcwd()):
     d = lasso_base_dir
     for i in range(3):
-        if 'metcouncil_data' in os.listdir(d):
+        if "metcouncil_data" in os.listdir(d):
             WranglerLogger.info("Lasso base directory set as: {}".format(d))
             return d
         d = os.path.dirname(d)
 
-    msg = "Cannot find Lasso base directory from {}, please input using keyword in parameters: `lasso_base_dir =` ".format(lasso_base_dir)
+    msg = "Cannot find Lasso base directory from {}, please input using keyword in parameters: `lasso_base_dir =` ".format(
+        lasso_base_dir
+    )
     WranglerLogger.error(msg)
-    raise(ValueError(msg))
+    raise (ValueError(msg))
 
 
 class Parameters:
@@ -84,6 +87,14 @@ class Parameters:
             Default:
             ::
                 NAME
+        lanes_lookup_file (str): Lookup table of number of lanes for different data sources.
+            Default:
+            ::
+                r"metcouncil_data/lookups/lanes.csv"
+        centroid_connect_lanes (int): Number of lanes for centroid connectors.
+            Default:
+            ::
+                1
         mpo_counties (list): list of county names within MPO boundary.
             Default:
             ::
@@ -209,6 +220,14 @@ class Parameters:
                     53: 1,
                     60: 1,
                 }
+        downtown_area_type_shape (str): Location of shapefile defining downtown area type.
+            Default:
+            ::
+                r"metcouncil_data/area_type/downtownzones_TAZ.shp"
+        downtown_area_type (int): Area type integer for downtown.
+            Default:
+            ::
+                5
         mrcc_roadway_class_shape (str): Shapefile of MRCC links with a property
             associated with roadway class. Default:
             ::
@@ -306,8 +325,9 @@ class Parameters:
             ::
                 r"tests/scratch/make_complete_network_from_fixed_width_file.s
 
-
-
+        zones (int): Number of travel analysis zones in the network. Default:
+            ::
+                3061
     """
 
     def __init__(self, **kwargs):
@@ -315,8 +335,8 @@ class Parameters:
         Time period and category  splitting info
         """
 
-        if 'time_periods_to_time' in kwargs:
-            self.time_periods_to_time = time_periods_to_time
+        if "time_periods_to_time" in kwargs:
+            self.time_periods_to_time = kwargs.get("time_periods_to_time")
         else:
             self.time_period_to_time = {
                 "AM": ("6:00", "9:00"),  ##TODO FILL IN with real numbers
@@ -330,9 +350,10 @@ class Parameters:
         self.route_type_mode_dict = {0: 8, 2: 9}
 
         self.cube_time_periods = {"1": "AM", "2": "MD"}
+        self.cube_time_periods_name = {"AM": "pk", "MD": "op"}
 
-        if 'categories' in kwargs:
-            self.categories = categories
+        if "categories" in kwargs:
+            self.categories = kwargs.get("categories")
         else:
             self.categories = {
                 # suffix, source (in order of search)
@@ -366,25 +387,25 @@ class Parameters:
         Details for calculating the county based on the centroid of the link.
         The COUNTY_VARIABLE should be the name of a field in shapefile.
         """
-        if 'lasso_base_dir' in kwargs:
-            self.base_dir = get_base_dir(lasso_base_dir = base_dir)
+        if "lasso_base_dir" in kwargs:
+            self.base_dir = get_base_dir(lasso_base_dir=kwargs.get("lasso_base_dir"))
         else:
             self.base_dir = get_base_dir()
 
-        if 'data_file_location' in kwargs:
-            self.data_files_location =  data_file_location
+        if "data_file_location" in kwargs:
+            self.data_file_location = kwargs.get("data_file_location")
         else:
-            self.data_file_location = os.path.join(self.base_dir,  "metcouncil_data")
+            self.data_file_location = os.path.join(self.base_dir, "metcouncil_data")
 
-        if 'settings_location' in kwargs:
-            self.settings_location = settings_location
+        if "settings_location" in kwargs:
+            self.settings_location = kwargs.get("settings_location")
         else:
-            self.settings_location = os.path.join(self.base_dir , "examples", "settings")
+            self.settings_location = os.path.join(self.base_dir, "examples", "settings")
 
-        if  'scratch_location' in kwargs:
-            self.scratch_location = scratch_location
+        if "scratch_location" in kwargs:
+            self.scratch_location = kwargs.get("scratch_location")
         else:
-            self.scratch_location = os.path.join(self.base_dir , "tests", "scratch")
+            self.scratch_location = os.path.join(self.base_dir, "tests", "scratch")
 
         ### COUNTIES
 
@@ -394,27 +415,27 @@ class Parameters:
         self.county_variable_shp = "NAME"
 
         self.county_code_dict = {
-            'Anoka':1,
-            'Carver':2,
-            'Dakota':3,
-            'Hennepin':4,
-            'Ramsey':5,
-            'Scott':6,
-            'Washington':7,
-            'external':10,
-            'Chisago':11,
-            'Goodhue':12,
-            'Isanti':13,
-            'Le Sueur':14,
-            'McLeod':15,
-            'Pierce':16,
-            'Polk':17,
-            'Rice':18,
-            'Sherburne':19,
-            'Sibley':20,
-            'St. Croix':21,
-            'Wright':22
-            }
+            "Anoka": 1,
+            "Carver": 2,
+            "Dakota": 3,
+            "Hennepin": 4,
+            "Ramsey": 5,
+            "Scott": 6,
+            "Washington": 7,
+            "external": 10,
+            "Chisago": 11,
+            "Goodhue": 12,
+            "Isanti": 13,
+            "Le Sueur": 14,
+            "McLeod": 15,
+            "Pierce": 16,
+            "Polk": 17,
+            "Rice": 18,
+            "Sherburne": 19,
+            "Sibley": 20,
+            "St. Croix": 21,
+            "Wright": 22,
+        }
 
         self.mpo_counties = [
             1,
@@ -426,6 +447,11 @@ class Parameters:
             2,
         ]
 
+        ### Lanes
+        self.lanes_lookup_file = os.path.join(
+            self.data_file_location, "lookups", "lanes.csv"
+        )
+
         ###  TAZS
 
         self.taz_shape = os.path.join(
@@ -436,7 +462,9 @@ class Parameters:
 
         ### AREA TYPE
         self.area_type_shape = os.path.join(
-            self.data_file_location, "area_type", "ThriveMSP2040CommunityDesignation.shp"
+            self.data_file_location,
+            "area_type",
+            "ThriveMSP2040CommunityDesignation.shp",
         )
         self.area_type_variable_shp = "COMDES2040"
         # area type map from raw data to model category
@@ -451,7 +479,7 @@ class Parameters:
         # diversified rural
         # rural residential
         # agricultural
-        self.area_type_code_dict  = {
+        self.area_type_code_dict = {
             23: 4,  # urban center
             24: 3,
             25: 2,
@@ -463,6 +491,16 @@ class Parameters:
             53: 1,
             60: 1,
         }
+
+        self.downtown_area_type_shape = os.path.join(
+            self.data_file_location,
+            "area_type",
+            "downtownzones_TAZ.shp",
+        )
+
+        self.downtown_area_type = int(5)
+
+        self.centroid_connect_lanes = int(1)
 
         self.osm_assgngrp_dict = os.path.join(
             self.data_file_location, "lookups", "osm_highway_asgngrp_crosswalk.csv"
@@ -492,7 +530,9 @@ class Parameters:
         )
 
         self.widot_shst_data = os.path.join(
-            self.data_file_location, "Wisconsin_Lanes_Counts_Median", "widot.out.matched.geojson"
+            self.data_file_location,
+            "Wisconsin_Lanes_Counts_Median",
+            "widot.out.matched.geojson",
         )
 
         self.roadway_class_dict = os.path.join(
@@ -510,7 +550,9 @@ class Parameters:
         self.mndot_count_variable_shp = "AADT_mn"
 
         self.widot_county_shape = os.path.join(
-            self.data_file_location, "Wisconsin_Lanes_Counts_Median", "TRADAS_(counts).shp"
+            self.data_file_location,
+            "Wisconsin_Lanes_Counts_Median",
+            "TRADAS_(counts).shp",
         )
 
         self.widot_count_shst_data = os.path.join(
@@ -521,9 +563,13 @@ class Parameters:
 
         self.widot_count_variable_shp = "AADT_wi"
 
-        self.net_to_dbf_crosswalk = os.path.join(self.settings_location, "net_to_dbf.csv")
+        self.net_to_dbf_crosswalk = os.path.join(
+            self.settings_location, "net_to_dbf.csv"
+        )
 
-        self.log_to_net_crosswalk = os.path.join(self.settings_location, "log_to_net.csv")
+        self.log_to_net_crosswalk = os.path.join(
+            self.settings_location, "log_to_net.csv"
+        )
 
         self.output_variables = [
             "model_link_id",
@@ -531,6 +577,7 @@ class Parameters:
             "A",
             "B",
             "shstGeometryId",
+            "shape_id",
             "distance",
             "roadway",
             "name",
@@ -602,7 +649,10 @@ class Parameters:
             "segment_id",
             "managed",
             "bus_only",
-            "rail_only"
+            "rail_only",
+            "bike_facility",
+            "mrcc_id",
+            "ROUTE_SYS",  #mrcc functional class
         ]
 
         self.output_link_shp = os.path.join(self.scratch_location, "links.shp")
@@ -637,17 +687,21 @@ class Parameters:
             "model_node_id",
             "A",
             "B",
-            "lanes",
+            # "lanes",
+            "lanes_AM",
+            "lanes_MD",
+            "lanes_PM",
+            "lanes_NT",
             "roadway_class",
             "assign_group",
             "county",
             "area_type",
             "trn_priority",
             "AADT",
-            'count_AM',
-            'count_MD',
-            'count_PM',
-            'count_NT',
+            "count_AM",
+            "count_MD",
+            "count_PM",
+            "count_NT",
             "count_daily",
             "centroidconnect",
             "bike_facility",
@@ -659,19 +713,32 @@ class Parameters:
             "walk_node",
             "bike_node",
             "transit_node",
-            "ML_lanes",
+            # "ML_lanes",
+            "ML_lanes_AM",
+            "ML_lanes_MD",
+            "ML_lanes_PM",
+            "ML_lanes_NT",
             "segment_id",
             "managed",
             "bus_only",
-            "rail_only"
+            "rail_only",
+            "mrcc_id",
         ]
 
-        self.float_col = [
-            "distance",
-            "ttime_assert",
-            "price",
-            "X",
-            "Y"
+        self.float_col = ["distance", "ttime_assert", "price", "X", "Y"]
+
+        self.string_col = [
+            "osm_node_id",
+            "name",
+            "roadway",
+            "shstGeometryId",
+            "access_AM",
+            "access_MD",
+            "access_PM",
+            "access_NT",
+            "ROUTE_SYS",
         ]
+
+        self.zones = 3061
 
         self.__dict__.update(kwargs)

@@ -16,7 +16,7 @@ changes:
     start_time: 06:00
   properties:
   - property: headway_secs
-    set: 3000
+    set: 1200
 - category: Transit Service Property Change
   facility:
     direction_id: 0
@@ -25,7 +25,7 @@ changes:
     start_time: 06:00
   properties:
   - property: headway_secs
-    set: 300
+    set: 600
 - category: Delete Transit Service
   facility:
     direction_id: 0

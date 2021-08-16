@@ -1,0 +1,6 @@
+HighwayLayerLogX,"N:\MTS\Working\Modeling\Network Rebuild 2018\NetworkReviews\8-1-19 no walk\no_walk_network\no_walk_network.net",8,25,8/13/2019 12:46:46 PM
+Node,model_node_id,X,Y,osm_node_id,drive_node,walk_node,bike_node,transit_node
+Link,A,B,model_link_id,county,trn_priority,area_type,HOV_access,aadt,count_AM,count_MD,count_PM,count_NT,count_daily,assign_group,lanes,centroidconnect,roadway_class,bike_facility,drive_access,walk_access,bike_access,transit_access,distance,ttime_assert
+L,A,0,3230,3262,999998,5,0,4,0,0,0,0,0,0,0,5,1,0,40,3,1,1,1,0,0.10462,0
+L,A,0,3262,3230,999997,5,0,4,0,0,0,0,0,0,0,5,1,0,40,3,1,1,1,0,0.10462,0
+N,A,0,354388,-93.18389,44.96898,"",1,0,0,0

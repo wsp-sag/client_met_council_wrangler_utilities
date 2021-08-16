@@ -1,41 +1,41 @@
-ROUTE_SYS,ROUTE_SYS_def,assign_group
-01,Interstate,1
-02,US Highway,2
-03,MN Highway,6
-04,County-State Aid Highway,6
-05,Municipal-State Aid Street,7
-07,County Road,7
-08,Township Road,7
-09,Township Road,7
-10,Municipal Street,7
-11,National Park Road,11
-12,National Forest Road,11
-13,Tribal Nation Road,11
-14,State Forest Road,11
-15,State Park Road,7
-16,Military Road,7
-17,Other Federal Agency Road,11
-18,Bureau of Fish and Wildlife Road,101
-19,Frontage Road,11
-20,Other State Agency Road,7
-21,Privately Maintained Public Access Road,3
-22,Connector (Ramp),4
-23,Airport Road,11
-24,Bureau of Indian Affairs (BIA) Road,11
-25,"Local Park, Forest or Reservation Agency Road",11
-26,Other Local Road,11
-27,Railroad Service Road,100
-28,State Toll Road,7
-29,Local Toll Road,7
-30,Alleyway,7
-31,USBR Road,7
-32,Other Road,11
-33,Bureau of Land Management (BLM) Road,11
-34,Non-Trafficway,98
-41,HOV/HOT Reversible lanes on Interstate,8
-42,HOV/HOT Reversible lanes on US Highway,8
-43,HOV/HOT Reversible lanes on MN Hwy,8
-51,Non-Numbered Interstate,2
-52,Non-Numbered US Highway,2
-53,Non-Numbered MN Highway,6
-70,Private Road-Restricted Access,11
+ROUTE_SYS,ROUTE_SYS_def,assign_group,roadway_class
+01,Interstate,1,10
+02,US Highway,2,20
+51,Non-Numbered Interstate,2,10
+52,Non-Numbered US Highway,2,20
+22,Connector (Ramp),4,60
+03,MN Highway,6,20
+04,County-State Aid Highway,6,30
+07,County Road,6,40
+53,Non-Numbered MN Highway,6,20
+05,Municipal-State Aid Street,7,40
+08,Township Road,7,40
+09,Township Road,7,40
+15,State Park Road,7,50
+16,Military Road,7,50
+20,Other State Agency Road,7,50
+24,Bureau of Indian Affairs (BIA) Road,7,50
+25,"Local Park, Forest or Reservation Agency Road",7,50
+26,Other Local Road,7,50
+28,State Toll Road,7,50
+29,Local Toll Road,7,50
+31,USBR Road,7,50
+32,Other Road,7,50
+33,Bureau of Land Management (BLM) Road,7,50
+41,HOV/HOT Reversible lanes on Interstate,8,10
+42,HOV/HOT Reversible lanes on US Highway,8,20
+43,HOV/HOT Reversible lanes on MN Hwy,8,20
+11,National Park Road,7,70
+12,National Forest Road,7,70
+13,Tribal Nation Road,7,70
+14,State Forest Road,7,70
+17,Other Federal Agency Road,7,50
+19,Frontage Road,11,40
+23,Airport Road,11,40
+10,Municipal Street,50,50
+21,Privately Maintained Public Access Road,50,50
+30,Alleyway,50,50
+70,Private Road-Restricted Access,50,50
+34,Non-Trafficway,98,50
+27,Railroad Service Road,100,50
+18,Bureau of Fish and Wildlife Road,101,70

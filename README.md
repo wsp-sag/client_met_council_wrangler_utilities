@@ -1,5 +1,7 @@
 # Lasso
-This package of utilities is a wrapper around the [network_wrangler](http://github.com/wsp-sag/network_wrangler) package for MetCouncil.  It aims to have the following functionality:
+This package of utilities is a wrapper around the [`network_wrangler`](http://github.com/wsp-sag/network_wrangler) package for MetCouncil.  **IMPORTANT** Lasso will automagically install `network_wrangler` for you, so
+
+It aims to have the following functionality:
 
  1. parse Cube log files and base highway networks and create ProjectCards for Network Wrangler  
  2. parse two Cube transit line files and create ProjectCards for NetworkWrangler  
@@ -8,34 +10,34 @@ This package of utilities is a wrapper around the [network_wrangler](http://gith
 ## Installation
 
 ### Requirements
-Lasso uses Python 3.6 and above.  Requirements are stored in `requirements.txt` but are automatically installed when using `pip` as are development requirements (for now) which are located in `dev-requirements.txt`
+Lasso uses Python 3.6 and above.  Requirements are stored in `requirements.txt` but are automatically installed when using `pip` as are development requirements (for now) which are located in `dev-requirements.txt`.
+
+The intallation instructions use the [`conda`](https://conda.io/en/latest/) virtual environment manager and some use the ['git'](https://git-scm.com/downloads) version control software.
 
 ### Basic instructions
 If you are managing multiple python versions, we suggest using [`virtualenv`](https://virtualenv.pypa.io/en/latest/) or [`conda`](https://conda.io/en/latest/) virtual environments. All commands should executed in a conda command prompt, not powershell or the system command prompt. Do not add conda to the system path during installation. This may cause problems with other programs that require python 2.7 to be placed in the system path.
 
-Example using a conda environment (recommended):
+Example using a conda environment (recommended) and using the package manager [pip](https://pip.pypa.io/en/stable/) to install Lasso from the source on GitHub.
 
 ```bash
-conda create python=3.7 -n <my_lasso_environment>
-source activate <my_lasso_environment>
-conda install rtree
-conda install shapely
-conda install fiona
-pip install git+https://github.com/wsp-sag/network_wrangler.git@master#egg=network_wrangler
-pip install git+https://github.com/wsp-sag/Lasso@master#egg=lasso
-
+conda config --add channels conda-forge
+conda create python=3.7 rtree geopandas folium osmnx -n <my_lasso_environment>
+conda activate <my_lasso_environment>
+pip install git+https://github.com/wsp-sag/Lasso@master
 ```
 Lasso can be installed in several ways depending on the user's needs. The above installation is the simplest method and is appropriate when the user does not anticipate needing to update lasso. An update will require rebuilding the network wrangler environment. Installing from clone is slightly more involved and requires the user to have a git manager on their machine, but permits the user to install lasso with the -e, edit, option so that their lasso installation can be updated through pulling new commits from the lasso repo without a full reinstallation.
 
-#### From GitHub
-Use the package manager [pip](https://pip.pypa.io/en/stable/) to install Lasso from the source on GitHub.
+Lasso will install `network_wrangler` from the [PyPi](https://pypi.org/project/network-wrangler/) repository because it is included in Lasso's `requirements.txt`.
+
+#### Bleeding Edge
+If you want to install a more up-to-date or development version of network wrangler, you can do so by installing it from
 
 ```bash
-conda install rtree
-conda install shapely
-pip install -e git+https://github.com/wsp-sag/network_wrangler.git@master#egg=network_wrangler
-pip install -e git+https://github.com/wsp-sag/Lasso@master#egg=lasso
-
+conda config --add channels conda-forge
+conda create python=3.7 rtree geopandas folium osmnx -n <my_lasso_environment>
+conda activate <my_lasso_environment>
+pip install git+https://github.com/wsp-sag/network_wrangler@develop
+pip install git+https://github.com/wsp-sag/Lasso@develop
 ```
 
 Note: if you wanted to install from a specific tag/version number or branch, replace `@master` with `@<branchname>`  or `@tag`
@@ -46,31 +48,41 @@ If you are going to be working on Lasso locally, you might want to clone it to y
 **if you plan to do development on both network wrangler and lasso locally, consider installing network wrangler from a clone as well!**
 
 ```bash
-conda create python=3.7 -n <my_lasso_environment>
-source activate <my_lasso_environment>
-conda install rtree
-conda install shapely
-conda install fiona
-conda install folium
-conda install osmnx
-
+conda config --add channels conda-forge
+conda create python=3.7 rtree geopandas folium osmnx -n <my_lasso_environment>
+conda activate <my_lasso_environment>
 git clone https://github.com/wsp-sag/Lasso
 git clone https://github.com/wsp-sag/network_wrangler
-
 cd network_wrangler
 pip install -e .
 cd ..
-
-cd lasso
+cd Lasso
 pip install -e .
 ```
 
 Note: if you are not part of the project team and want to contribute code bxack to the project, please fork before you clone and then add the original repository to your upstream origin list per [these directions on github](https://help.github.com/en/articles/fork-a-repo).
 
 ## Documentation
-https://wsp-sag.github.io/Lasso/
 
-Documentation requires the sphinx package and can be built from the `/docs` folder using the command: `make html`
+Documentation is located at [https://wsp-sag.github.io/Lasso/](https://wsp-sag.github.io/Lasso/)
+
+Edit the source of the documentation  in the `/docs` folder.
+
+To build the documentation locally requires additional packages found in the `dev_requirements.txt` folder.  
+
+To install these into your conda python environment execute the following from the command line in the Lasso folder:
+
+```bash
+conda activate <my_lasso_environment>
+pip install -r dev-requirements.txt
+```
+
+To build the documentation, navigate to the `/docs` folder and execute the command: `make html`
+
+```bash
+cd docs
+make html
+```
 
 ## Usage
 
@@ -142,7 +154,7 @@ cube_transit_net.write_as_cube_lin(os.path.join(SCRATCH_DIR, "t_transit_test.lin
 
 **Read a wrangler roadway network standard network from file and write it to fixed width format that cube can read**
 
-Note that this calculates MetCouncil specific variables and also by default will create a "model-ready" network which 
+Note that this calculates MetCouncil specific variables and also by default will create a "model-ready" network which
 separates out managed lanes as parallel links.
 
 ```python

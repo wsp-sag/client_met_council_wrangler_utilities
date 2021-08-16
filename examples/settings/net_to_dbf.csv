@@ -39,3 +39,7 @@ count_daily,count_day
 model_node_id,node_id
 osm_node_id,osmnodeid
 transit_node,tran_node
+ML_lanes_AM,m_lanes_AM
+ML_lanes_MD,m_lanes_MD
+ML_lanes_PM,m_lanes_PM
+ML_lanes_NT,m_lanes_NT

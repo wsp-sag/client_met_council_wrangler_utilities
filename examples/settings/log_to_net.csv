@@ -1,5 +1,5 @@
 log,net
-LINK_ID,model_link_id
+MODEL_LINK_ID,model_link_id
 SHSTGEOMETRYID,shstGeometryId
 DISTANCE,distance
 ROADWAY,roadway

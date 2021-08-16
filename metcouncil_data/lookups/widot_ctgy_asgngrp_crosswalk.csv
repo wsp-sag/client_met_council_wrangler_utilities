@@ -1,19 +1,19 @@
-RDWY_CTGY_,RDWY_def,assign_group
-4,County Trunk Highway,6
-5,Municipal Road,7
-7,County Forest Road,7
-8,Other County Road,7
-9,Private / Ineligible,11
-10,Interstate Road,1
-20,US Highway,2
-26,USH Connecting Highway,2
-30,State Trunk Highway,6
-36,STN Connecting Highway,6
-40,On/Off Ramp,4
-41,Connector,7
-42,Frontage Road,11
-43,Wayside,11
-44,Rest Area,11
-45,Weigh Station,7
-46,Connecting Highway,6
-99,Statistical Road,11
+RDWY_CTGY_,RDWY_def,assign_group,roadway_class
+4,County Trunk Highway,6,20
+5,Municipal Road,50,50
+7,County Forest Road,7,40
+8,Other County Road,7,40
+9,Private / Ineligible,7,40
+10,Interstate Road,1,10
+20,US Highway,6,20
+26,USH Connecting Highway,2,20
+30,State Trunk Highway,6,20
+36,STN Connecting Highway,6,20
+40,On/Off Ramp,4,60
+41,Connector,4,60
+42,Frontage Road,11,40
+43,Wayside,11,40
+44,Rest Area,11,40
+45,Weigh Station,7,40
+46,Connecting Highway,6,40
+99,Statistical Road,11,40

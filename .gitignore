@@ -25,7 +25,11 @@ docs/_generated/*
 *.log
 # except logs in the cube example
 !examples/cube/*.log
+!examples/stpaul/cube/*.log
 
+# Created  yml
+notebooks/*.yml
+notebooks/*.yaml
 # Jupyter
 .ipynb_checkpoints/
 profile_default/
@@ -78,3 +82,5 @@ env/
 
 # large metcouncil data file
 metcouncil_data/mrcc/*.mrcc.out.matched.geojson
+.Rproj.user
+scripts/.Rhistory

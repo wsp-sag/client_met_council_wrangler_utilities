@@ -1,0 +1,66 @@
+---
+title: "Make Simple Lanes Lookup"
+output: html_notebook
+---
+
+# Overhead
+```{r overhead, include = FALSE}
+packages_vector <- c("tidyverse")
+
+need_to_install <- packages_vector[!(packages_vector %in% installed.packages()[,"Package"])]
+
+if (length(need_to_install)) install.packages(need_to_install)
+
+for (package in packages_vector) {
+  library(package, character.only = TRUE)
+}
+
+```
+
+# Remote I-O
+```{r remote-io}
+dir <- "../metcouncil_data/lookups/"
+
+input_file_name <- paste0(dir, "lanes_detail.csv")
+output_file_name <- paste0(dir, "lanes.csv")
+```
+
+
+# Data Reads
+```{r data-reads}
+input_df <- read_csv(input_file_name, col_types = cols(.default = col_integer(),
+                                                       osm_link_id = col_character(),
+                                                       osm_latest = col_character(),
+                                                       osm_latest_min = col_character(),
+                                                       osm_latest_max = col_character(),
+                                                       osm_latest_mode = col_character()))
+
+```
+
+# Reductions
+```{r reductions}
+output_df <- input_df %>%
+  select(model_link_id, 
+         ROUTE_SYS, 
+         legacy_osm_lanes = OSMlanes,
+         mndot,
+         widot,
+         anoka,
+         hennepin,
+         carver,
+         dakota,
+         washington,
+         naive,
+         osm_min = osm_latest_min,
+         osm_max = osm_latest_max,
+         osm_mode = osm_latest_mode) %>%
+  mutate(osm_min = as.integer(osm_min),
+         osm_max = as.integer(osm_max),
+         osm_mode = as.integer(osm_mode))
+```
+
+# Write to Disk
+```{r writes}
+write_csv(output_df, path = output_file_name)
+```
+
