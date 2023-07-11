@@ -846,7 +846,7 @@ class Project(object):
         return emme_link_change_df, emme_node_change_df
 
     @staticmethod
-    def determine_roadway_network_changes_compatibility(
+    def determine_roadway_network_changes_compatability(
         base_roadway_network: ModelRoadwayNetwork,
         roadway_link_changes: DataFrame,
         roadway_node_changes: DataFrame,
@@ -1040,7 +1040,6 @@ class Project(object):
             """"""
             WranglerLogger.debug("Processing link additions")
             cube_add_df = link_changes_df[link_changes_df["operation_final"] == "A"]
-
             if len(cube_add_df) == 0:
                 WranglerLogger.debug("No link additions processed")
                 return {}
@@ -1324,10 +1323,6 @@ class Project(object):
                 log_df["operation_final"] = log_df.apply(lambda x: Project._final_op(x), axis=1)
 
             return log_df[changeable_col + ["operation_final"]]
-
-        delete_link_dict = None
-        add_link_dict = None
-        change_link_dict_list = []
 
         delete_link_dict = None
         add_link_dict = None

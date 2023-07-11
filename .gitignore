@@ -25,7 +25,6 @@ docs/_generated/*
 *.log
 # except logs in the cube example
 !examples/cube/*.log
-!examples/stpaul/cube/*.log
 
 # Created  yml
 notebooks/*.yml

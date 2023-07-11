@@ -936,4 +936,5 @@ class Parameters:
         self.sf_county = os.path.join(
             self.data_file_location, "lookups", "SFcounty.shp"
         )
+
         self.__dict__.update(kwargs)
