@@ -668,6 +668,9 @@ def prepare_table_for_taz_transit_network(
 
     model_tables = dict()
 
+    if "model_node_id" not in nodes_df.columns:
+        nodes_df["model_node_id"] = nodes_df["N"]
+
     # taps are centroids, drop taz and maz
 
     model_tables["centroid_table"] = nodes_df[
