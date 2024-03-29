@@ -298,19 +298,33 @@ class CubeTransit(object):
         """
         Evaluate Additions
 
-        First assess if need to add multiple routes if there are multiple time periods
         """
-        for line in lines_to_add:
-            time_period_numbers = CubeTransit.get_time_period_numbers_from_cube_properties(
-                self.line_properties[line]
-            )
-            if len(time_period_numbers) > 1:
-                for tp in time_period_numbers[1:]:
-                    lines_to_add.append(self.add_additional_time_periods(tp, line))
+        added_routes=[]
+        add_card_dict = {
+            "category": "Add New Route",
+            "routes": []
+            }
 
         for line in lines_to_add:
-            add_card_dict = self.create_add_route_card_dict(line)
-            project_card_changes.append(add_card_dict)
+
+            route_properties, trip_properties = self.create_routing_properties(line)
+
+            # check these attributs to see if a route is an existing added route
+            # if yes, then nest the trips to existing route
+            route_match_attributes = ["route_id", "route_short_name", "route_long_name", 
+                                "route_type", "agency_raw_name", "agency_id"]
+
+            if route_properties in added_routes:
+                for route in add_card_dict['routes']:
+                    if all(route[attr] == route_properties[attr] for attr in route_match_attributes):
+                        route['trips'].append(trip_properties)
+
+            else:
+                added_routes.append(route_properties.copy())
+                route_properties['trips'] = [trip_properties]
+                add_card_dict["routes"].append(route_properties)
+
+        project_card_changes.append(add_card_dict)
 
         return project_card_changes
 
@@ -523,6 +537,66 @@ class CubeTransit(object):
         )
         return add_card_dict
 
+    def create_routing_properties(
+        self, line: str
+    ):
+        """
+        Creates a project card formatted dictionary for adding a line.
+
+        Args:
+            line: name of line that is being added
+
+        Returns:
+            project card change-formatted dictionaries for the route additon.
+            - route properties
+            - trip properties
+        """
+        cube_properties_dict = self.line_properties[line]
+
+        headway_sec = []
+        for key, value in cube_properties_dict.items():
+            if 'HEADWAY' in key:
+                time_period_number = key.split('[')[1].rstrip(']')
+                time_period_name = self.parameters.cube_time_periods[time_period_number]
+                time_period_range = self.parameters.time_period_to_time[time_period_name]
+                headway_sec.append({f'{time_period_range}':value*60})
+
+        route_id, direction_id = CubeTransit.unpack_route_name(line)
+        route_short_name = cube_properties_dict['SHORTNAME'].replace("'", "").replace("\"", "")
+        route_long_name = cube_properties_dict['LONGNAME'].replace("'", "").replace("\"", "")
+        route_type = self.parameters.cube_mode_to_route_type[cube_properties_dict['MODE']]
+        agency_raw_name = self.parameters.default_agency_raw_name
+
+        operator_to_agency_id_dict = {}
+        for key, value in self.parameters.metro_operator_dict.items():
+            if value not in operator_to_agency_id_dict:
+                operator_to_agency_id_dict[value] = int(key)
+        agency_id = operator_to_agency_id_dict[cube_properties_dict['OPERATOR']]
+        
+        route_properties = {
+                "route_id": route_id,
+                "route_short_name":route_short_name,
+                "route_long_name":route_long_name,
+                "route_type":route_type,
+                "agency_raw_name":agency_raw_name,
+                "agency_id":agency_id,
+                "trips":[]
+        }
+
+        trip_properties = {
+            "direction_id": int(direction_id[1]),
+            "headway_sec": headway_sec,
+            "routing": [],
+        }
+
+        for _, row in self.shapes[line].iterrows():
+            if row['stop']:
+                trip_properties['routing'].append({row['node']: {'stop': True}})
+            else:
+                trip_properties['routing'].append(abs(row['node']))
+
+        return route_properties, trip_properties
+
     @staticmethod
     def get_time_period_numbers_from_cube_properties(properties_list: list):
         """
@@ -581,22 +655,20 @@ class CubeTransit(object):
         Unpacks route name into direction, route, agency, and time period info
 
         Args:
-            line_name (str): i.e. "0_452-111_452_pk1"
+            line_name (str): i.e. "abc_d1_AM_MD_508"
 
         Returns:
-            route_id (str): 452-111
-            time_period (str): i.e. pk
+            route_id (str) : i.e. abc
             direction_id (str) : i.e. 1
-            agency_id (str) : i.e. 0
         """
 
         line_name = line_name.strip('"')
 
-        agency_id, route_id, _rtid, _tp_direction = line_name.split("_")
-        time_period = _tp_direction[0:-1]
-        direction_id = _tp_direction[-1]
+        parts = line_name.split("_")
+        route_id = parts[0]
+        direction_id = parts[1]
 
-        return route_id, time_period, agency_id, direction_id
+        return route_id, direction_id
 
     def calculate_start_end_times(self, line_properties_dict: dict):
         """
@@ -957,11 +1029,9 @@ class StandardTransit(object):
         # trip_df["shp_index"] = trip_df.groupby(['agency_raw_name', "route_id", "tod_name", "direction_id"]).cumcount()+1
         # trip_df["shp_index"] = trip_df["shp_index"].astype(str)
         # trip_df["shp_index"] = "shp" + trip_df["shp_index"]
-        # trip_df['shp_index'] = trip_df['shape_id'].rank(method='dense').astype(int)
-        # TODO: use the index from the previous??
-        trip_df['shp_index'], unique = pd.factorize(trip_df['shape_id'])
-        trip_df['shp_index'] = trip_df['shp_index'] + 1
-
+        unique_sorted = sorted(trip_df['shape_id'].unique())
+        rank_mapping = {shape_id: rank+1 for rank, shape_id in enumerate(unique_sorted)}
+        trip_df['shp_index'] = trip_df['shape_id'].map(rank_mapping)
 
         trip_df["route_short_name"] = trip_df["route_short_name"].str.replace("-", "_").str.replace(" ", ".").str.replace(",", "_").str.slice(stop = 50)
 

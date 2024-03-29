@@ -812,4 +812,14 @@ class Parameters:
             "0": 4
         }
 
+        self.cube_mode_to_route_type = {
+            5: 3,
+            6: 3,
+            7: 3,
+            8: 0, # or 1 both correspond to cube mode 8
+            9: 2
+        }
+
+        self.default_agency_raw_name = 'metro_transit_10_27_23'
+
         self.__dict__.update(kwargs)
