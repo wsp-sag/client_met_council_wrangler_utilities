@@ -324,7 +324,8 @@ class CubeTransit(object):
                 route_properties['trips'] = [trip_properties]
                 add_card_dict["routes"].append(route_properties)
 
-        project_card_changes.append(add_card_dict)
+        if len(added_routes)>0:
+            project_card_changes.append(add_card_dict)
 
         return project_card_changes
 
