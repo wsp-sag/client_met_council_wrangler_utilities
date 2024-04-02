@@ -541,7 +541,7 @@ class CubeTransit(object):
         self, line: str
     ):
         """
-        Creates a project card formatted dictionary for adding a line.
+        Creates a project card formatted dictionary for adding a new line.
 
         Args:
             line: name of line that is being added
@@ -561,7 +561,7 @@ class CubeTransit(object):
                 time_period_range = self.parameters.time_period_to_time[time_period_name]
                 headway_sec.append({f'{time_period_range}':value*60})
 
-        route_id, direction_id = CubeTransit.unpack_route_name(line)
+        route_id, direction_id = CubeTransit.get_route_and_direction_from_route_name(line)
         route_short_name = cube_properties_dict['SHORTNAME'].replace("'", "").replace("\"", "")
         route_long_name = cube_properties_dict['LONGNAME'].replace("'", "").replace("\"", "")
         route_type = self.parameters.cube_mode_to_route_type[cube_properties_dict['MODE']]
@@ -589,6 +589,7 @@ class CubeTransit(object):
             "routing": [],
         }
 
+        # TODO: alight, board, and time_to_next_node_sec
         for _, row in self.shapes[line].iterrows():
             if row['stop']:
                 trip_properties['routing'].append({row['node']: {'stop': True}})
@@ -653,6 +654,29 @@ class CubeTransit(object):
     def unpack_route_name(line_name: str):
         """
         Unpacks route name into direction, route, agency, and time period info
+
+        Args:
+            line_name (str): i.e. "0_452-111_452_pk1"
+
+        Returns:
+            route_id (str): 452-111
+            time_period (str): i.e. pk
+            direction_id (str) : i.e. 1
+            agency_id (str) : i.e. 0
+        """
+
+        line_name = line_name.strip('"')
+
+        agency_id, route_id, _rtid, _tp_direction = line_name.split("_")
+        time_period = _tp_direction[0:-1]
+        direction_id = _tp_direction[-1]
+
+        return route_id, time_period, agency_id, direction_id
+
+    @staticmethod
+    def get_route_and_direction_from_route_name(line_name: str):
+        """
+        Unpacks route name to get the route id and direction id
 
         Args:
             line_name (str): i.e. "abc_d1_AM_MD_508"
