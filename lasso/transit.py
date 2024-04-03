@@ -298,18 +298,35 @@ class CubeTransit(object):
         """
         Evaluate Additions
 
-        First assess if need to add multiple routes if there are multiple time periods
         """
-        for line in lines_to_add:
-            time_period_numbers = CubeTransit.get_time_period_numbers_from_cube_properties(
-                self.line_properties[line]
-            )
-            if len(time_period_numbers) > 1:
-                for tp in time_period_numbers[1:]:
-                    lines_to_add.append(self.add_additional_time_periods(tp, line))
+        added_routes=[]
+        add_card_dict = {
+            "category": "Add New Route",
+            "routes": []
+            }
 
         for line in lines_to_add:
-            add_card_dict = self.create_add_route_card_dict(line)
+
+            route_properties, trip_properties = self.create_routing_properties(line)
+
+            # check these attributs to see if a route is an existing added route
+            # if yes, then nest the trips to existing route
+            route_match_attributes = ["route_id", "route_short_name", "route_long_name", 
+                                "route_type", "agency_raw_name", "agency_id"]
+
+            if route_properties in added_routes:
+                for route in add_card_dict['routes']:
+                    if all(route[attr] == route_properties[attr] for attr in route_match_attributes):
+                        route['trips'].append(trip_properties)
+
+            else:
+                added_routes.append(route_properties.copy())
+                route_properties['trips'] = [trip_properties]
+                add_card_dict["routes"].append(route_properties)
+
+        # new route properties are saved in added_routes 
+        # only append add_card_dict when new transit routes get added
+        if len(added_routes)>0:
             project_card_changes.append(add_card_dict)
 
         return project_card_changes
@@ -462,17 +479,23 @@ class CubeTransit(object):
         Returns:
             A project card change-formatted dictionary for the route deletion.
         """
-        base_start_time_str, base_end_time_str = self.calculate_start_end_times(
+        time_period_list = self.calculate_start_end_times(
             base_transit_line_properties_dict
         )
+
+        route_id, direction_id = CubeTransit.get_route_and_direction_from_route_name(line)
 
         delete_card_dict = {
             "category": "Delete Transit Service",
             "facility": {
-                "route_id": line.split("_")[1],
-                "direction_id": int(line.strip('"')[-1]),
-                "start_time": base_start_time_str,
-                "end_time": base_end_time_str,
+                "route_id": route_id,
+                "direction_id": int(direction_id[1]),
+                "shape_id": self.transit_shape_crosswalk_dict.get(
+                    line.split("_")[-1].strip('"')
+                ) if self.transit_shape_crosswalk_dict else line.split("_")[-1].strip('"'),
+                "time_periods": [
+                    {"start_time": tp[0], "end_time": tp[1]} for tp in time_period_list
+                ],
             },
         }
         WranglerLogger.debug(
@@ -522,6 +545,67 @@ class CubeTransit(object):
             "Adding {} route to changes:\n{}".format(line, add_card_dict)
         )
         return add_card_dict
+
+    def create_routing_properties(
+        self, line: str
+    ):
+        """
+        Creates a project card formatted dictionary for adding a new line.
+
+        Args:
+            line: name of line that is being added
+
+        Returns:
+            project card change-formatted dictionaries for the route additon.
+            - route properties
+            - trip properties
+        """
+        cube_properties_dict = self.line_properties[line]
+
+        headway_sec = []
+        for key, value in cube_properties_dict.items():
+            if 'HEADWAY' in key:
+                time_period_number = key.split('[')[1].rstrip(']')
+                time_period_name = self.parameters.cube_time_periods[time_period_number]
+                time_period_range = self.parameters.time_period_to_time[time_period_name]
+                headway_sec.append({f'{time_period_range}':value*60})
+
+        route_id, direction_id = CubeTransit.get_route_and_direction_from_route_name(line)
+        route_short_name = cube_properties_dict['SHORTNAME'].replace("'", "").replace("\"", "")
+        route_long_name = cube_properties_dict['LONGNAME'].replace("'", "").replace("\"", "")
+        route_type = self.parameters.cube_mode_to_route_type[cube_properties_dict['MODE']]
+        agency_raw_name = self.parameters.default_agency_raw_name
+
+        operator_to_agency_id_dict = {}
+        for key, value in self.parameters.metro_operator_dict.items():
+            if value not in operator_to_agency_id_dict:
+                operator_to_agency_id_dict[value] = int(key)
+        agency_id = operator_to_agency_id_dict[cube_properties_dict['OPERATOR']]
+        
+        route_properties = {
+            "route_id": route_id,
+            "route_short_name":route_short_name,
+            "route_long_name":route_long_name,
+            "route_type":route_type,
+            "agency_raw_name":agency_raw_name,
+            "agency_id":agency_id,
+            "trips":[]
+        }
+
+        trip_properties = {
+            "direction_id": int(direction_id[1]),
+            "headway_sec": headway_sec,
+            "routing": [],
+        }
+
+        # TODO: alight, board, and time_to_next_node_sec
+        for _, row in self.shapes[line].iterrows():
+            if row['stop']:
+                trip_properties['routing'].append({row['node']: {'stop': True}})
+            else:
+                trip_properties['routing'].append(abs(row['node']))
+
+        return route_properties, trip_properties
 
     @staticmethod
     def get_time_period_numbers_from_cube_properties(properties_list: list):
@@ -597,6 +681,27 @@ class CubeTransit(object):
         direction_id = _tp_direction[-1]
 
         return route_id, time_period, agency_id, direction_id
+
+    @staticmethod
+    def get_route_and_direction_from_route_name(line_name: str):
+        """
+        Unpacks route name to get the route id and direction id
+
+        Args:
+            line_name (str): i.e. "abc_d1_AM_MD_508"
+
+        Returns:
+            route_id (str) : i.e. abc
+            direction_id (str) : i.e. 1
+        """
+
+        line_name = line_name.strip('"')
+
+        parts = line_name.split("_")
+        route_id = parts[0]
+        direction_id = parts[1]
+
+        return route_id, direction_id
 
     def calculate_start_end_times(self, line_properties_dict: dict):
         """
@@ -957,28 +1062,15 @@ class StandardTransit(object):
         # trip_df["shp_index"] = trip_df.groupby(['agency_raw_name', "route_id", "tod_name", "direction_id"]).cumcount()+1
         # trip_df["shp_index"] = trip_df["shp_index"].astype(str)
         # trip_df["shp_index"] = "shp" + trip_df["shp_index"]
-        trip_df['shp_index'] = trip_df['shape_id'].rank(method='dense').astype(int)
 
+        # use shape_id from shape_df in case any trips get deleted via project cards
+        unique_sorted = sorted(shape_df['shape_id'].unique()) 
+        rank_mapping = {shape_id: rank+1 for rank, shape_id in enumerate(unique_sorted)}
+        trip_df['shp_index'] = trip_df['shape_id'].map(rank_mapping)
 
         trip_df["route_short_name"] = trip_df["route_short_name"].str.replace("-", "_").str.replace(" ", ".").str.replace(",", "_").str.slice(stop = 50)
 
         trip_df["route_long_name"] = trip_df["route_long_name"].str.replace(",", "_").str.slice(stop = 50)
-
-        # trip_df["NAME"] = trip_df.apply(
-        #     lambda x: str(x.agency_id)
-        #     + "_"
-        #     + str(x.route_id)
-        #     + "_"
-        #     + str(x.tod_name)
-        #     + "_"
-        #     + "d"
-        #     + str(x.direction_id)
-        #     + "_"
-        #     + str(x.shp_index),
-        #     # + "_s"
-        #     # + str(x.shape_id),
-        #     axis=1,
-        # )
 
         # CUBE max string length
         # trip_df["NAME"] = trip_df["NAME"].str.slice(stop = 28)
@@ -995,7 +1087,6 @@ class StandardTransit(object):
                                             else self.parameters.metro_operator_dict.get(row['agency_id']), 
                                             axis=1)
         trip_df["SHORTNAME"] = trip_df["route_short_name"].str.slice(stop = 30)
-        # trip_df['TOD'] = trip_df.groupby(['agency_id','route_id','direction_id','shp_index'])['tod_name'].transform(lambda x: '_'.join(sorted(x)))
 
         def create_dict(group_df, key_col, value_col):
             group_dict = {key: value for key, value in zip(group_df[key_col], group_df[value_col])}
@@ -1075,7 +1166,9 @@ class StandardTransit(object):
         if not cube_mode:
             if "express" in str(row["route_long_name"]).lower():
                 cube_mode = 7  # Express
-            elif int(row["route_id"].split("-")[0]) > 99:
+            elif (row["route_id"].split("-")[0].isdigit() 
+                and int(row["route_id"].split("-")[0]) > 99
+            ):
                 cube_mode = 6  # Suburban Local
             else:
                 cube_mode = 5  # Urban Local
