@@ -324,6 +324,8 @@ class CubeTransit(object):
                 route_properties['trips'] = [trip_properties]
                 add_card_dict["routes"].append(route_properties)
 
+        # new route properties are saved in added_routes 
+        # only append add_card_dict when new transit routes get added
         if len(added_routes)>0:
             project_card_changes.append(add_card_dict)
 
