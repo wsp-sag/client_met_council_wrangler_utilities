@@ -581,13 +581,13 @@ class CubeTransit(object):
         agency_id = operator_to_agency_id_dict[cube_properties_dict['OPERATOR']]
         
         route_properties = {
-                "route_id": route_id,
-                "route_short_name":route_short_name,
-                "route_long_name":route_long_name,
-                "route_type":route_type,
-                "agency_raw_name":agency_raw_name,
-                "agency_id":agency_id,
-                "trips":[]
+            "route_id": route_id,
+            "route_short_name":route_short_name,
+            "route_long_name":route_long_name,
+            "route_type":route_type,
+            "agency_raw_name":agency_raw_name,
+            "agency_id":agency_id,
+            "trips":[]
         }
 
         trip_properties = {
