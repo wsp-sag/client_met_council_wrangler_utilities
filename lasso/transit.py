@@ -477,17 +477,23 @@ class CubeTransit(object):
         Returns:
             A project card change-formatted dictionary for the route deletion.
         """
-        base_start_time_str, base_end_time_str = self.calculate_start_end_times(
+        time_period_list = self.calculate_start_end_times(
             base_transit_line_properties_dict
         )
+
+        route_id, direction_id = CubeTransit.get_route_and_direction_from_route_name(line)
 
         delete_card_dict = {
             "category": "Delete Transit Service",
             "facility": {
-                "route_id": line.split("_")[1],
-                "direction_id": int(line.strip('"')[-1]),
-                "start_time": base_start_time_str,
-                "end_time": base_end_time_str,
+                "route_id": route_id,
+                "direction_id": int(direction_id[1]),
+                "shape_id": self.transit_shape_crosswalk_dict.get(
+                    line.split("_")[-1].strip('"')
+                ) if self.transit_shape_crosswalk_dict else line.split("_")[-1].strip('"'),
+                "time_periods": [
+                    {"start_time": tp[0], "end_time": tp[1]} for tp in time_period_list
+                ],
             },
         }
         WranglerLogger.debug(
@@ -1054,29 +1060,15 @@ class StandardTransit(object):
         # trip_df["shp_index"] = trip_df.groupby(['agency_raw_name', "route_id", "tod_name", "direction_id"]).cumcount()+1
         # trip_df["shp_index"] = trip_df["shp_index"].astype(str)
         # trip_df["shp_index"] = "shp" + trip_df["shp_index"]
-        unique_sorted = sorted(trip_df['shape_id'].unique())
+
+        # use shape_id from shape_df in case any trips get deleted via project cards
+        unique_sorted = sorted(shape_df['shape_id'].unique()) 
         rank_mapping = {shape_id: rank+1 for rank, shape_id in enumerate(unique_sorted)}
         trip_df['shp_index'] = trip_df['shape_id'].map(rank_mapping)
 
         trip_df["route_short_name"] = trip_df["route_short_name"].str.replace("-", "_").str.replace(" ", ".").str.replace(",", "_").str.slice(stop = 50)
 
         trip_df["route_long_name"] = trip_df["route_long_name"].str.replace(",", "_").str.slice(stop = 50)
-
-        # trip_df["NAME"] = trip_df.apply(
-        #     lambda x: str(x.agency_id)
-        #     + "_"
-        #     + str(x.route_id)
-        #     + "_"
-        #     + str(x.tod_name)
-        #     + "_"
-        #     + "d"
-        #     + str(x.direction_id)
-        #     + "_"
-        #     + str(x.shp_index),
-        #     # + "_s"
-        #     # + str(x.shape_id),
-        #     axis=1,
-        # )
 
         # CUBE max string length
         # trip_df["NAME"] = trip_df["NAME"].str.slice(stop = 28)
@@ -1093,7 +1085,6 @@ class StandardTransit(object):
                                             else self.parameters.metro_operator_dict.get(row['agency_id']), 
                                             axis=1)
         trip_df["SHORTNAME"] = trip_df["route_short_name"].str.slice(stop = 30)
-        # trip_df['TOD'] = trip_df.groupby(['agency_id','route_id','direction_id','shp_index'])['tod_name'].transform(lambda x: '_'.join(sorted(x)))
 
         def create_dict(group_df, key_col, value_col):
             group_dict = {key: value for key, value in zip(group_df[key_col], group_df[value_col])}
