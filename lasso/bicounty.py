@@ -69,6 +69,7 @@ def add_opposite_direction_to_link(
     link_gdf['A'] = link_gdf['A'].astype(int)
     link_gdf['B'] = link_gdf['B'].astype(int)
     link_gdf = link_gdf.drop(['A_X','A_Y','B_X','B_Y'], axis=1)
+    link_gdf = link_gdf.reset_index(drop=True)
     
     return link_gdf
 
@@ -109,6 +110,15 @@ def build_pnr_connections(
     Start actual process
     """
 
+    orig_crs = roadway_network.nodes_df.crs # record original crs
+    interim_crs = CRS('epsg:26915') # crs for nearest calculation
+
+    roadway_network.links_df = roadway_network.links_df.to_crs(interim_crs)
+    roadway_network.shapes_df = roadway_network.shapes_df.to_crs(interim_crs)
+    roadway_network.nodes_df = roadway_network.nodes_df.to_crs(interim_crs)
+    roadway_network.nodes_df["X"] = roadway_network.nodes_df["geometry"].x
+    roadway_network.nodes_df["Y"] = roadway_network.nodes_df["geometry"].y
+
     # (1) add pnr nodes
     # read pnr parking location
     pnr_col = ['Zone','X','Y']
@@ -117,7 +127,7 @@ def build_pnr_connections(
                         pnr_nodes_df, 
                         geometry=gpd.points_from_xy(pnr_nodes_df['X'], pnr_nodes_df['Y']),
                         crs=parameters.output_proj)
-    pnr_nodes_df = pnr_nodes_df.to_crs(roadway_network.nodes_df.crs)
+    pnr_nodes_df = pnr_nodes_df.to_crs(interim_crs)
     pnr_nodes_df["X"] = pnr_nodes_df["geometry"].apply(lambda g: g.x)
     pnr_nodes_df["Y"] = pnr_nodes_df["geometry"].apply(lambda g: g.y)
 
@@ -133,8 +143,11 @@ def build_pnr_connections(
 
     # assign a model_node_id to pnr parking node
     pnr_nodes_df['model_node_id'] = pnr_nodes_df['Zone'] + roadway_network.nodes_df.model_node_id.max()
+    # add pnr flag attribute
+    pnr_nodes_df['pnr'] = 1
 
     # add pnr parking nodes to node_df
+    roadway_network.nodes_df['pnr'] = 0
     roadway_network.nodes_df = pd.concat([roadway_network.nodes_df, pnr_nodes_df.drop(['Zone'], axis=1)], 
                                 sort = False, 
                                 ignore_index = True)
@@ -149,13 +162,13 @@ def build_pnr_connections(
         ].copy()
 
     # for each pnr nodes, search for the nearest walk and bike nodes
-    dr_wlk_nodes_df = dr_wlk_nodes_df.to_crs(CRS('epsg:26915'))
+    dr_wlk_nodes_df = dr_wlk_nodes_df.to_crs(interim_crs)
     dr_wlk_nodes_df['X'] = dr_wlk_nodes_df.geometry.map(lambda g:g.x)
     dr_wlk_nodes_df['Y'] = dr_wlk_nodes_df.geometry.map(lambda g:g.y)
     dr_wlk_node_ref = dr_wlk_nodes_df[['X', 'Y']].values
     tree = cKDTree(dr_wlk_node_ref)
 
-    pnr_nodes_df = pnr_nodes_df.to_crs(CRS('epsg:26915'))
+    pnr_nodes_df = pnr_nodes_df.to_crs(interim_crs)
     pnr_nodes_df['X'] = pnr_nodes_df['geometry'].apply(lambda p: p.x)
     pnr_nodes_df['Y'] = pnr_nodes_df['geometry'].apply(lambda p: p.y)
 
@@ -173,6 +186,10 @@ def build_pnr_connections(
         pnr_link_gdf = add_opposite_direction_to_link(pnr_link_gdf, nodes_df=roadway_network.nodes_df, links_df=roadway_network.links_df)
         
         # specify link variables
+        pnr_link_gdf['model_link_id'] = max(roadway_network.links_df['model_link_id']) + pnr_link_gdf.index + 1
+        pnr_link_gdf['shstGeometryId'] = pnr_link_gdf.index + 1
+        pnr_link_gdf['shstGeometryId'] = pnr_link_gdf['shstGeometryId'].apply(lambda x: "pnr" + str(x))
+        pnr_link_gdf['id'] = pnr_link_gdf['shstGeometryId']
         pnr_link_gdf['roadway'] = 'pnr'
         pnr_link_gdf['lanes'] = 1
         pnr_link_gdf['walk_access'] = 1
@@ -184,12 +201,17 @@ def build_pnr_connections(
                                         ignore_index = True)
         roadway_network.links_df.drop_duplicates(subset = ['A', 'B'], inplace = True)
 
+        # update shsapes_df
+        pnr_shape_df = pnr_link_gdf.copy()
+        pnr_shape_df = pnr_shape_df[['id', 'geometry']]
+        roadway_network.shapes_df = pd.concat([roadway_network.shapes_df, pnr_shape_df]).reset_index(drop=True)
+
 
     # (3) build PNR TAZ connectors
     if build_pnr_taz_connector:
         # select centroids
         centroids_df = roadway_network.nodes_df[roadway_network.nodes_df.model_node_id.isin(parameters.taz_N_list)].copy()
-        centroids_df = centroids_df.to_crs(CRS('epsg:26915'))
+        centroids_df = centroids_df.to_crs(interim_crs)
 
         # for each centroid, draw a buffer,
         # connect the centroid to all pnr parking nodes that fall in the buffer
@@ -210,7 +232,11 @@ def build_pnr_connections(
             pnr_connector_gdf = pd.DataFrame(list(zip(centroid_node_id, pnr_node_id)), columns=['A','B'])
             pnr_connector_gdf = add_opposite_direction_to_link(pnr_connector_gdf, nodes_df=roadway_network.nodes_df, links_df=roadway_network.links_df)
             
-             # specify link variables
+            # specify link variables
+            pnr_connector_gdf['model_link_id'] = max(roadway_network.links_df['model_link_id']) + pnr_connector_gdf.index + 1
+            pnr_connector_gdf['shstGeometryId'] = pnr_connector_gdf.index + 1
+            pnr_connector_gdf['shstGeometryId'] = pnr_connector_gdf['shstGeometryId'].apply(lambda x: "pnrtaz" + str(x))
+            pnr_connector_gdf['id'] = pnr_connector_gdf['shstGeometryId']
             pnr_connector_gdf['roadway'] = "pnr"
             pnr_connector_gdf['lanes'] = 1
             pnr_connector_gdf['drive_access'] = 1
@@ -221,5 +247,15 @@ def build_pnr_connections(
                                             ignore_index = True)
             roadway_network.links_df.drop_duplicates(subset = ['A', 'B'], inplace = True)
 
+            # update shsapes_df
+            pnr_connector_shape_df = pnr_connector_gdf.copy()
+            pnr_connector_shape_df = pnr_connector_shape_df[['id', 'geometry']]
+            roadway_network.shapes_df = pd.concat([roadway_network.shapes_df, pnr_connector_shape_df]).reset_index(drop=True)
+
+    roadway_network.links_df = roadway_network.links_df.to_crs(orig_crs)
+    roadway_network.shapes_df = roadway_network.shapes_df.to_crs(orig_crs)
+    roadway_network.nodes_df = roadway_network.nodes_df.to_crs(orig_crs)
+    roadway_network.nodes_df["X"] = roadway_network.nodes_df["geometry"].x
+    roadway_network.nodes_df["Y"] = roadway_network.nodes_df["geometry"].y
 
     return roadway_network
