@@ -1674,6 +1674,9 @@ class ModelRoadwayNetwork(RoadwayNetwork):
             dict: dictionary with columns names as keys, column width as values.
         """
         WranglerLogger.info("Starting fixed width conversion")
+        if 'name' in df.columns:
+            df['name']=df['name'].apply(lambda x: x.strip().split(',')[0].replace("[",'').replace("'nan'","").replace("nan","").replace("'",""))
+                                                                                                                                     
 
         # get the max length for each variable column
         max_width_dict = dict(

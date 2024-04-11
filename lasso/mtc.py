@@ -103,6 +103,7 @@ def calculate_facility_type(
     join_gdf["oneWay"].fillna("", inplace = True)
     join_gdf["oneWay"] = join_gdf["oneWay"].apply(lambda x: "NA" if x in [None, np.nan, float('nan')] else x)
     join_gdf["oneWay"] = join_gdf["oneWay"].apply(lambda x: str(x) if type(x) == bool else x)
+    join_gdf["oneWay"] = join_gdf["oneWay"].apply(lambda x: str(x) if type(x) == int else x)
     join_gdf["oneWay"] = join_gdf["oneWay"].apply(lambda x: x if type(x) == str else ','.join(map(str, x)))
     join_gdf["oneWay_binary"] = join_gdf["oneWay"].apply(lambda x: 0 if "False" in x else 1)
 
@@ -1710,7 +1711,7 @@ def roadway_standard_to_mtc_network(
         roadway_network.links_df["assignable"]
     )
 
-    roadway_network = calculate_cntype(roadway_network, parameters)
+    roadway_network = calculate_cntype(roadway_network, parameters, overwrite=True)
     roadway_network = calculate_transit(roadway_network, parameters)
     roadway_network = calculate_useclass(roadway_network, parameters)
     roadway_network = calculate_facility_type(roadway_network, parameters, update_network_variable = True)
@@ -1735,6 +1736,8 @@ def roadway_standard_to_mtc_network(
         on = "id"
     )
 
+    roadway_network.links_mtc_df = gpd.GeoDataFrame(roadway_network.links_mtc_df, geometry=roadway_network.links_mtc_df.geometry)
+    roadway_network.nodes_mtc_df = gpd.GeoDataFrame(roadway_network.nodes_mtc_df, geometry=roadway_network.nodes_mtc_df.geometry)
     roadway_network.links_mtc_df.crs = roadway_network.crs
     roadway_network.nodes_mtc_df.crs = roadway_network.crs
     WranglerLogger.info("Setting Coordinate Reference System to {}".format(output_proj))
@@ -1748,8 +1751,11 @@ def roadway_standard_to_mtc_network(
         lambda g: g.y
     )
 
+    roadway_network.nodes_mtc_df["pnr"] = np.where(roadway_network.nodes_mtc_df['pnr']==0, '0.0', '1.0')
+
     # CUBE expect node id to be N
     roadway_network.nodes_mtc_df.rename(columns={"model_node_id": "N"}, inplace=True)
+    # roadway_network.nodes_mtc_df['model_node_id']=roadway_network.nodes_mtc_df['N']
 
     return roadway_network
 
@@ -1860,17 +1866,19 @@ def route_properties_gtfs_to_cube(
 
     trip_df["agency_id"].fillna("", inplace = True)
 
+    trip_df['dir_shp_index'] = trip_df.groupby(["TM2_operator", "route_id", "tod_name"]).cumcount()
+
     trip_df["NAME"] = trip_df.apply(
         lambda x: str(x.TM2_operator)
         + "_"
         + str(x.route_id)
         + "_"
-        + x.tod_name
+        + str(x.tod_name)
         + "_"
         + "d"
-        + str(int(x.direction_id))
+        + str(int(x.dir_shp_index))
         + "_s"
-        + x.shape_id,
+        + str(x.shape_id),       
         axis=1,
     )
 
@@ -1933,7 +1941,10 @@ def cube_format(transit_network, row):
         add_nntime = True
     else:
         add_nntime = False
-    s += "\n N={}".format(transit_network.shape_gtfs_to_cube(row, add_nntime))
+    nodes, runtime = transit_network.shape_gtfs_to_cube(row, add_nntime)
+    if add_nntime:
+        s += '\n RUNTIME={},'.format(runtime)
+    s += "\n N={}".format(nodes)
 
     # TODO: need NNTIME, ACCESS_C
 
@@ -1952,6 +1963,19 @@ def write_as_cube_lin(
         outpath: File location for output cube line file.
 
     """
+
+    transit_network.feed.trips['trip_id'] = transit_network.feed.trips['trip_id'].astype(int)
+    transit_network.feed.trips['shape_id'] = transit_network.feed.trips['shape_id'].astype(int)
+
+    transit_network.feed.stop_times['trip_id'] = transit_network.feed.stop_times['trip_id'].astype(int)
+    transit_network.feed.stop_times['stop_id'] = transit_network.feed.stop_times['stop_id'].astype(float).astype(int)
+
+    transit_network.feed.shapes['shape_id'] = transit_network.feed.shapes['shape_id'].astype(int)
+    
+    transit_network.feed.stops['stop_id'] =  transit_network.feed.stops['stop_id'].astype(float).astype(int)
+
+    transit_network.feed.frequencies['trip_id'] =  transit_network.feed.frequencies['trip_id'].astype(int)
+    
     if not outpath:
         outpath  = os.path.join(parameters.scratch_location,"outtransit.lin")
     trip_cube_df = route_properties_gtfs_to_cube(transit_network, parameters, outpath)
@@ -2151,7 +2175,9 @@ def _is_express_bus(x):
         if (x.route_short_name.startswith("J")) | (x.route_short_name.startswith("Lynx")):
             return 1
     if x.agency_name == "SolTrans":
-        if (x.route_short_name in ["80", "92", "78"]) | (x.route_long_name in ["80", "92", "78"]):
+        if ((x.route_short_name in ["80", "92", "78","Green","Blue","Red"]) | 
+            (x.route_long_name in ["80", "92", "78","Green","Blue","Red"])
+        ):
             return 1
     if x.agency_name == "Vine (Napa County)":
         if x.route_short_name in ["29"]:

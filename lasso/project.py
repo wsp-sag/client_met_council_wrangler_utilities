@@ -165,6 +165,7 @@ class Project(object):
         roadway_node_changes: Optional[DataFrame] = None,
         transit_changes: Optional[CubeTransit] = None,
         base_roadway_network: Optional[RoadwayNetwork] = None,
+        base_transit_network: Optional[StandardTransit] = None,
         base_cube_transit_network: Optional[CubeTransit] = None,
         build_cube_transit_network: Optional[CubeTransit] = None,
         project_name: Optional[str] = None,
@@ -403,6 +404,8 @@ class Project(object):
                 gtfs_feed_dir=base_transit_dir,
                 parameters=parameters
             )
+        elif base_transit_network:
+            base_transit_network = base_transit_network
         else:
             msg = "No base transit network."
             WranglerLogger.info(msg)
@@ -695,16 +698,23 @@ class Project(object):
 
             # get new emme nodes
             new_emme_node_id_list = [
-                n for n in emme_node_change_df['emme_id'] if n not in emme_node_id_crosswalk_df['emme_node_id']
+                n for n in emme_node_change_df['emme_id'].to_list() if n not in emme_node_id_crosswalk_df['emme_node_id'].to_list()
             ]
             WranglerLogger.info('New emme node id list {}'.format(new_emme_node_id_list))
             new_wrangler_node = emme_node_id_crosswalk_df['model_node_id'].max()
 
             # add crosswalk for new emme nodes
             for new_emme_node in new_emme_node_id_list:
-                new_wrangler_node = new_wrangler_node + 1
-                emme_node_id_dict.update({new_emme_node : new_wrangler_node})
-            
+                if new_emme_node in emme_node_id_dict.keys():
+                    msg = "new node id {} has already been added to the crosswalk".format(new_emme_node)
+                    WranglerLogger.error(msg)
+                    raise ValueError(msg)
+                else:
+                    new_wrangler_node = new_wrangler_node + 1
+                    emme_node_id_dict.update({new_emme_node : new_wrangler_node})
+                    new_emme_node_id_crosswalk_df = pd.DataFrame(emme_node_id_dict.items(), columns=['emme_node_id', 'model_node_id'])
+                    new_emme_node_id_crosswalk_df.to_csv(emme_node_id_crosswalk_file, index=False)
+                
             # for nodes update model_node_id
             emme_node_change_df['model_node_id'] = emme_node_change_df['emme_id'].map(emme_node_id_dict).fillna(0)
         
@@ -873,7 +883,7 @@ class Project(object):
         roadway_link_changes.rename(columns=dbf_to_net_dict, inplace=True)
 
         for c in roadway_node_changes.columns:
-            if (c not in log_to_net_df["log"].tolist() + log_to_net_df["net"].tolist()) & (c not in ["A", "B"]):
+            if (c not in log_to_net_df["log"].tolist() + log_to_net_df["net"].tolist()) & (c not in ["A", "B", "X", "Y"]):
                 roadway_node_changes.rename(columns={c : c.lower()}, inplace=True)
         roadway_node_changes.rename(columns=log_to_net_dict, inplace=True)
         roadway_node_changes.rename(columns=dbf_to_net_dict, inplace=True)
@@ -1083,6 +1093,8 @@ class Project(object):
 
             node_add_df = node_add_df.drop(["operation_final"], axis=1)
 
+            node_add_df = node_add_df.apply(_reproject_coordinates, axis=1)
+
             for x in node_add_df.columns:
                 node_add_df[x] = node_add_df[x].astype(self.base_roadway_network.nodes_df[x].dtype)
 
@@ -1092,6 +1104,12 @@ class Project(object):
             WranglerLogger.debug("{} Nodes Added".format(len(add_nodes_dict_list)))
 
             return add_nodes_dict_list
+
+        def _reproject_coordinates(row):
+            reprojected_x, reprojected_y = self.parameters.transformer.transform(row['X'], row['Y'])
+            row['X'] = reprojected_x
+            row['Y'] = reprojected_y
+            return row
 
         def _process_single_link_change(change_row, changeable_col):
             """"""

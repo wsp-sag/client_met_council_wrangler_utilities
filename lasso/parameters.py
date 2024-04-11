@@ -1,4 +1,5 @@
 import os
+import pyproj
 from .logger import WranglerLogger
 
 
@@ -740,7 +741,7 @@ class Parameters:
             #MTC
             'name',
             "distance",
-            #"roadway",
+            "roadway",
             #"name",
             #MC
             #"shape_id",
@@ -769,6 +770,7 @@ class Parameters:
             "managed",
             "bus_only",
             "rail_only",
+            "pnr",      
             #MTC
             "assignable",
             "cntype",
@@ -795,6 +797,8 @@ class Parameters:
             #bi-county
             "nmt2010",
             "nmt2020",
+            "BRT",
+            "has_transit"
         ]
 
         self.output_link_shp = os.path.join(self.scratch_location, "links.shp")
@@ -820,7 +824,7 @@ class Parameters:
 
         self.fare_matrix_output_variables = ["faresystem", "origin_farezone", "destination_farezone", "price"]
 
-        self.zones = 4756
+        self.zones = 6593
         """
         Create all the possible headway variable combinations based on the cube time periods setting
         """
@@ -906,6 +910,8 @@ class Parameters:
             #bi-county
             "nmt2010",
             "nmt2020",
+            "BRT",
+            "has_transit"               
         ]
 
         self.float_col = [
@@ -921,6 +927,7 @@ class Parameters:
         self.string_col = [
             "osm_node_id",
             "name",
+            "pnr",      
             "roadway",
             "shstGeometryId",
             "access_AM",
@@ -936,5 +943,11 @@ class Parameters:
         )
 
         self.drive_buffer =  6
+
+        #self.network_build_crs = CRS("EPSG:2875")
+        #self.project_card_crs = CRS("EPSG:4326")
+        #self.transformer = pyproj.Transformer.from_crs(
+        #    self.network_build_crs, self.project_card_crs, always_xy=True
+        #)
 
         self.__dict__.update(kwargs)
