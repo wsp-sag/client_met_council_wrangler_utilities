@@ -172,6 +172,7 @@ class CubeTransit(object):
                 )
             line_properties_dict.update({short_line_name: v["line_properties"]})
             line_shapes_dict.update({short_line_name: v["line_shape"]})
+            time_period_names = []
 
             for tp in time_period_numbers:
                 time_period_name = self.parameters.cube_time_periods[tp]
@@ -185,7 +186,23 @@ class CubeTransit(object):
                     + str(shp_index)
                 )
                 single_lines.update({single_line_name: short_line_name})
+                time_period_names.append(time_period_name)
             
+            # used in the warning message, checking if time periods in NAME matches HEADWAY[x]
+            rebuild_line_name = (
+                str(route_id)
+                + "_"
+                + str(direction_id)
+                + "_"
+                + str("_".join(time_period_names))
+                + "_"
+                + str(shp_index)
+            )
+            if rebuild_line_name != k.strip('"'):
+                WranglerLogger.info(
+                    "Time periods in line NAME {} doesn't match HEADWAY!".format(k)
+                )
+
         new_lines = list(_line_data.keys())
         """
         Before adding lines, check to see if any are overlapping with existing ones in the network
