@@ -79,6 +79,7 @@ class CubeTransit(object):
 
         self.lines = []
 
+        self.signle_lines = {}
         self.line_properties = {}
         self.shapes = {}
 
@@ -145,13 +146,47 @@ class CubeTransit(object):
 
         _line_data = transformed_tree_data['lines']
 
-        line_properties_dict = {
-            k: v["line_properties"] for k, v in _line_data.items()
-        }
-        line_shapes_dict = {
-            k: v["line_shape"] for k, v in _line_data.items()
-        }
-        new_lines = list(line_properties_dict.keys())
+        line_properties_dict = {}
+        line_shapes_dict = {}
+        # ungroup the existing line name into multiple signle lines based on HEADWAY, 
+        # each single line represent a time period
+        # create a short line name {route_id}_{direction}_{shp_index} without time periods,
+        # because existing line name may not refelct the correct time periods, 
+        # e.g. remove a time period without updatting the line name
+        # build correspondence between signle lines and short line name
+        # used to identify if an entire line or a time period get deleted, added or updated
+        single_lines = {}
+        for k, v in _line_data.items():
+            route_id, direction_id, shp_index = CubeTransit.get_route_dir_shpindex_from_route_name(
+                k
+            )
+            time_period_numbers = CubeTransit.get_time_period_numbers_from_cube_properties(
+                v["line_properties"]
+            )
+            short_line_name = (
+                    str(route_id)
+                    + "_"
+                    + str(direction_id)
+                    + "_"
+                    + str(shp_index)
+                )
+            line_properties_dict.update({short_line_name: v["line_properties"]})
+            line_shapes_dict.update({short_line_name: v["line_shape"]})
+
+            for tp in time_period_numbers:
+                time_period_name = self.parameters.cube_time_periods[tp]
+                single_line_name = (
+                    str(route_id)
+                    + "_"
+                    + str(direction_id)
+                    + "_"
+                    + str(time_period_name)
+                    + "_"
+                    + str(shp_index)
+                )
+                single_lines.update({single_line_name: short_line_name})
+            
+        new_lines = list(_line_data.keys())
         """
         Before adding lines, check to see if any are overlapping with existing ones in the network
         """
@@ -172,6 +207,7 @@ class CubeTransit(object):
         self.program_type = transformed_tree_data.get("program_type",None)
 
         self.lines += new_lines
+        self.signle_lines.update(single_lines)
         self.line_properties.update(line_properties_dict)
         self.shapes.update(line_shapes_dict)
 
@@ -218,9 +254,15 @@ class CubeTransit(object):
         """
         Identify what needs to be evaluated
         """
-        lines_to_update = [l for l in self.lines if l in base_transit.lines]
-        lines_to_delete = [l for l in base_transit.lines if l not in self.lines]
-        lines_to_add = [l for l in self.lines if l not in base_transit.lines]
+        base_lines = list(base_transit.signle_lines.keys())
+        build_lines = list(self.signle_lines.keys())
+
+        # check each signle line instead of orginal grouped line NAME
+        # get the corresponding short line name 
+        # since {route_id}, {direction}, {shp_index} are stable for each line
+        lines_to_update = list(set([self.signle_lines[l] for l in build_lines if l in base_lines]))
+        lines_to_delete = list(set([base_transit.signle_lines[l] for l in base_lines if l not in build_lines]))
+        lines_to_add = list(set([self.signle_lines[l] for l in build_lines if l not in base_lines]))
 
         project_card_changes = []
 
@@ -229,38 +271,16 @@ class CubeTransit(object):
         """
 
         for line in lines_to_update:
+            # line is the short line name
+            route_id, direction_id, shp_index = CubeTransit.get_route_dir_shpindex_from_route_name(line)
             WranglerLogger.debug(
-                "Finding differences in time periods for: {}".format(line)
+                "Finding differences in time periods for: line (route {}, direction {}, shape index {})".format(
+                    route_id, direction_id, shp_index)
             )
 
             """
             Find any additional time periods that might need to add or delete.
             """
-            base_cube_time_period_numbers = CubeTransit.get_time_period_numbers_from_cube_properties(
-                base_transit.line_properties[line]
-            )
-
-            build_cube_time_period_numbers = CubeTransit.get_time_period_numbers_from_cube_properties(
-                self.line_properties[line]
-            )
-
-            time_periods_to_add = [
-                tp
-                for tp in build_cube_time_period_numbers
-                if tp not in base_cube_time_period_numbers
-            ]
-
-            for tp in time_periods_to_add:
-                lines_to_add.append(self.add_additional_time_periods(tp, line))
-
-            time_periods_to_delete = [
-                tp
-                for tp in base_cube_time_period_numbers
-                if tp not in build_cube_time_period_numbers
-            ]
-
-            for tp in time_periods_to_delete:
-                lines_to_delete.append(line)
 
             WranglerLogger.debug("Evaluating differences in: {}".format(line))
             updated_properties = self.evaluate_route_property_differences(
@@ -280,7 +300,11 @@ class CubeTransit(object):
             if updated_shapes:
                 for updates in updated_shapes:
                     if (len(updates.get("existing"))==0) or (len(updates.get("set"))==0):
-                        WranglerLogger.info("Review transit routing project, manual correction needed for line {}!".format(line))
+                        WranglerLogger.info(
+                            "Review transit routing project, manual correction needed for "
+                            "line (route {}, direction {}, shape index {})!".format(
+                            route_id, direction_id, shp_index)
+                        )
                 update_shape_card_dict = self.create_update_route_card_dict(
                     line, updated_shapes
                 )
@@ -437,6 +461,8 @@ class CubeTransit(object):
             self.line_properties[line]
         )
 
+        route_id, direction_id, shp_index = CubeTransit.get_route_dir_shpindex_from_route_name(line)
+
         if "start_time" in updated_properties_dict:
             time_period_list=[
                 (updated_properties_dict["start_time"], updated_properties_dict["end_time"])
@@ -447,11 +473,12 @@ class CubeTransit(object):
         update_card_dict = {
             "category": "Transit Service Property Change",
             "facility": {
-                "route_id": line.split("_")[0].strip('"'),
-                "direction_id": int(line.split("_")[1].strip('d')[-1]),
+                "route_id": route_id,
+                "direction_id": int(direction_id[1]),
                 "shape_id": self.transit_shape_crosswalk_dict.get(
-                    line.split("_")[-1].strip('"')
-                ) if self.transit_shape_crosswalk_dict else line.split("_")[-1].strip('"'),
+                    shp_index
+                ) if self.transit_shape_crosswalk_dict else shp_index,
+                "shape_index": shp_index,
                 "time_periods": [
                     {"start_time": tp[0], "end_time": tp[1]} for tp in time_period_list
                 ],
@@ -479,11 +506,21 @@ class CubeTransit(object):
         Returns:
             A project card change-formatted dictionary for the route deletion.
         """
-        time_period_list = self.calculate_start_end_times(
+        base_time_period_list = self.calculate_start_end_times(
             base_transit_line_properties_dict
         )
 
-        route_id, direction_id = CubeTransit.get_route_and_direction_from_route_name(line)
+        if line in self.line_properties:
+            # delete time periods
+            build_time_period_list = self.calculate_start_end_times(
+                self.line_properties[line]
+            )
+            delete_time_period_list = list(set(base_time_period_list) - set(build_time_period_list))
+        else:
+            # delete the entire line
+            delete_time_period_list = base_time_period_list
+
+        route_id, direction_id, shp_index = CubeTransit.get_route_dir_shpindex_from_route_name(line)
 
         delete_card_dict = {
             "category": "Delete Transit Service",
@@ -491,10 +528,11 @@ class CubeTransit(object):
                 "route_id": route_id,
                 "direction_id": int(direction_id[1]),
                 "shape_id": self.transit_shape_crosswalk_dict.get(
-                    line.split("_")[-1].strip('"')
-                ) if self.transit_shape_crosswalk_dict else line.split("_")[-1].strip('"'),
+                    shp_index
+                ) if self.transit_shape_crosswalk_dict else shp_index,
+                "shape_index": shp_index,
                 "time_periods": [
-                    {"start_time": tp[0], "end_time": tp[1]} for tp in time_period_list
+                    {"start_time": tp[0], "end_time": tp[1]} for tp in delete_time_period_list
                 ],
             },
         }
@@ -562,6 +600,7 @@ class CubeTransit(object):
         """
         cube_properties_dict = self.line_properties[line]
 
+        # add entire new line
         headway_sec = []
         for key, value in cube_properties_dict.items():
             if 'HEADWAY' in key:
@@ -570,7 +609,7 @@ class CubeTransit(object):
                 time_period_range = self.parameters.time_period_to_time[time_period_name]
                 headway_sec.append({f'{time_period_range}':value*60})
 
-        route_id, direction_id = CubeTransit.get_route_and_direction_from_route_name(line)
+        route_id, direction_id, _ = CubeTransit.get_route_dir_shpindex_from_route_name(line) 
         route_short_name = cube_properties_dict['SHORTNAME'].replace("'", "").replace("\"", "")
         route_long_name = cube_properties_dict['LONGNAME'].replace("'", "").replace("\"", "")
         route_type = self.parameters.cube_mode_to_route_type[cube_properties_dict['MODE']]
@@ -683,25 +722,34 @@ class CubeTransit(object):
         return route_id, time_period, agency_id, direction_id
 
     @staticmethod
-    def get_route_and_direction_from_route_name(line_name: str):
+    def get_route_dir_shpindex_from_route_name(line_name: str):
         """
-        Unpacks route name to get the route id and direction id
+        Unpacks route name to get the route id, direction id, shape index
 
         Args:
             line_name (str): i.e. "abc_d1_AM_MD_508"
 
         Returns:
             route_id (str) : i.e. abc
-            direction_id (str) : i.e. 1
+            direction_id (str) : i.e. d1
+            shape_index (int) : i.d. 100
         """
 
         line_name = line_name.strip('"')
 
         parts = line_name.split("_")
-        route_id = parts[0]
-        direction_id = parts[1]
+        if len(parts) < 3:
+            raise ValueError(
+                "line name {} is not in the correct format. "
+                "Expected format: [route id]_[direction id]_[time periods]_[shape index] or "
+                "[route id]_[direction id]_[shape index]".format(
+                line_name))
+        else:
+            route_id = parts[0]
+            direction_id = parts[1]
+            shp_index = parts[-1]
 
-        return route_id, direction_id
+        return route_id, direction_id, shp_index
 
     def calculate_start_end_times(self, line_properties_dict: dict):
         """
@@ -811,7 +859,12 @@ class CubeTransit(object):
         properties_list = []
         for k, v in difference_dict.items():
             change_item = {}
-            if any(i in k for i in ["HEADWAY", "FREQ"]):
+            # don't add line NAME change to project card
+            # when a time period get deleted and removed from line NAME
+            # Lasso will rebuild the line NAME based on existing time periods
+            if k == 'NAME':
+                continue
+            elif any(i in k for i in ["HEADWAY", "FREQ"]):
                 change_item["property"] = "headway_secs"
                 tp_name = self.parameters.cube_time_periods[
                     k.split("[")[1][0]
