@@ -277,9 +277,15 @@ class CubeTransit(object):
         # check each signle line instead of orginal grouped line NAME
         # get the corresponding short line name 
         # since {route_id}, {direction}, {shp_index} are stable for each line
-        lines_to_update = list(set([self.signle_lines[l] for l in build_lines if l in base_lines]))
-        lines_to_delete = list(set([base_transit.signle_lines[l] for l in base_lines if l not in build_lines]))
-        lines_to_add = list(set([self.signle_lines[l] for l in build_lines if l not in base_lines]))
+        lines_to_update = sorted(list(
+            set([self.signle_lines[l] for l in build_lines if l in base_lines]))
+        )
+        lines_to_delete = sorted(list(
+            set([base_transit.signle_lines[l] for l in base_lines if l not in build_lines]))
+        )
+        lines_to_add = sorted(list(
+            set([self.signle_lines[l] for l in build_lines if l not in base_lines]))
+        )
 
         project_card_changes = []
 
