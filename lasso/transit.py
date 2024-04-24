@@ -290,6 +290,15 @@ class CubeTransit(object):
         project_card_changes = []
 
         """
+        Evaluate Deletions
+        """
+        for line in lines_to_delete:
+            delete_card_dict = self.create_delete_route_card_dict(
+                line, base_transit.line_properties[line]
+            )
+            project_card_changes.append(delete_card_dict)
+
+        """
         Evaluate Property Updates
         """
 
@@ -332,16 +341,7 @@ class CubeTransit(object):
                     line, updated_shapes
                 )
                 project_card_changes.append(update_shape_card_dict)
-
-        """
-        Evaluate Deletions
-        """
-        for line in lines_to_delete:
-            delete_card_dict = self.create_delete_route_card_dict(
-                line, base_transit.line_properties[line]
-            )
-            project_card_changes.append(delete_card_dict)
-
+        
         """
         Evaluate Additions
 
