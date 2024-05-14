@@ -23,7 +23,7 @@ Petaluma_2016_5_22,Petaluma Transit,267,21,3,68,Local bus,22,0,Motor Standard Bu
 RioVista_2015_8_20,Rio Vista Delta Breeze,5,13,3,52,Local bus,14,0,Motor Standard Bus
 SFMTA_2015_8_11,San Francisco Municipal Transportation Agency,SFMTA,22,0,110,Light rail,39,0,LRV2
 SFMTA_2015_8_11,San Francisco Municipal Transportation Agency,SFMTA,22,3,21,Local bus,2,0,Motor Standard Bus
-SFMTA_2015_8_11,San Francisco Municipal Transportation Agency,SFMTA,22,5,20,Local bus,3,0,Motor Standard Bus
+SFMTA_2015_8_11,San Francisco Municipal Transportation Agency,SFMTA,22,5,20,Cable Car,3,0,Motor Standard Bus
 SF_Bay_Ferry2016_07_01,San Francisco Bay Ferry,SB,25,4,101,Ferry service,36,0,Ferry
 SamTrans_2015_8_20,SamTrans,samtrans-ca-us,6,3,24,Local bus,4,0,Motor Standard Bus
 SamTrans_2015_8_20,SamTrans,samtrans-ca-us,6,3,80,Express bus,25,1,SamTrans Plus Bus

@@ -1937,7 +1937,7 @@ def cube_format(transit_network, row):
     s += "\n OPERATOR={},".format(int(row.TM2_operator) if ~math.isnan(row.TM2_operator) else 99)
     s += '\n SHORTNAME=\"%s",' % (row.route_short_name,)
     s += '\n VEHICLETYPE={},'.format(row.vehtype_num)
-    if row.TM2_line_haul_name in ["Light rail", "Heavy rail", "Commuter rail", "Ferry service"]:
+    if row.TM2_line_haul_name in ["Light rail", "Heavy rail", "Commuter rail", "Ferry service", "Cable Car"]:
         add_nntime = True
     else:
         add_nntime = False
