@@ -1706,6 +1706,7 @@ class ModelRoadwayNetwork(RoadwayNetwork):
         output_node_header_width_txt: str = None,
         output_cube_network_script: str = None,
         drive_only: bool = False,
+        output_cube_network_name: str = "complete_network.net",
     ):
         """
         Writes out fixed width file.
@@ -1902,7 +1903,7 @@ class ModelRoadwayNetwork(RoadwayNetwork):
 
         s = s[:-1]
         s += '\n'
-        s += 'FILEO NETO = "complete_network.net"\n\n'
+        s += 'FILEO NETO = "{}"\n\n'.format(output_cube_network_name)
         s += ' ZONES = {}\n\n'.format(self.parameters.zones)
         s += '; Trim leading whitespace from string variables\n'
         # todo: The below should be built above based on columns that are strings
