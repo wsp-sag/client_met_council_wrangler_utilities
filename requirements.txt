@@ -1,6 +1,6 @@
 lark-parser
 jupyter
 notebook
-pandas==1.3.3
+pandas==2.2.1
 network-wrangler
 unidecode

@@ -1514,7 +1514,7 @@ def add_rail_ae_connections(
         if i == 0:
             new_link_gdf = add_snap_gdf.copy()
         else:
-            new_link_gdf = new_link_gdf.append(add_snap_gdf, ignore_index=True, sort=False)
+            new_link_gdf = pd.concat([new_link_gdf, add_snap_gdf], ignore_index=True, sort=False)
 
     if len(rail_nodes_df) > 0:
         new_link_gdf = new_link_gdf[['A', 'model_node_id']].copy()

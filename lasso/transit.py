@@ -1355,7 +1355,7 @@ class StandardTransit(object):
             on = ['shst_node_id', 'osm_node_id']
         )
 
-        final_stops_df = stops_with_id_df.append(stops_join_df)
+        final_stops_df = pd.concat([stops_with_id_df,stops_join_df])
         assert len(final_stops_df) == len(stops_df)
         self.feed.stops = final_stops_df
 
@@ -1381,7 +1381,7 @@ class StandardTransit(object):
             on = ['shape_shst_node_id', 'shape_osm_node_id']
         )
 
-        final_shapes_df = shapes_with_id_df.append(shapes_join_df)
+        final_shapes_df = pd.concat([shapes_with_id_df,shapes_join_df])
         assert len(final_shapes_df) == len(shapes_df)
 
         final_shapes_df = final_shapes_df.sort_values(by='shape_pt_sequence', ascending=True)
