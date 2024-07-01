@@ -1750,7 +1750,7 @@ def roadway_standard_to_mtc_network(
     roadway_network.nodes_mtc_df["Y"] = roadway_network.nodes_mtc_df.geometry.apply(
         lambda g: g.y
     )
-
+    # roadway_network.nodes_mtc_df["pnr"]=roadway_network.nodes_mtc_df["pnr"].fillna(0)
     roadway_network.nodes_mtc_df["pnr"] = np.where(roadway_network.nodes_mtc_df['pnr']==0, '0.0', '1.0')
 
     # CUBE expect node id to be N
