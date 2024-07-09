@@ -1753,7 +1753,8 @@ def roadway_standard_to_mtc_network(
         lambda g: g.y
     )
     # roadway_network.nodes_mtc_df["pnr"]=roadway_network.nodes_mtc_df["pnr"].fillna(0)
-    roadway_network.nodes_mtc_df["pnr"] = np.where(roadway_network.nodes_mtc_df['pnr']==0, '0.0', '1.0')
+    WranglerLogger.info("Setting PNR value and converting it to string")
+    roadway_network.nodes_mtc_df["pnr"] = np.where(roadway_network.nodes_mtc_df['pnr'].isin([0,'',' ']), '0.0', '1.0')
 
     # CUBE expect node id to be N
     roadway_network.nodes_mtc_df.rename(columns={"model_node_id": "N"}, inplace=True)
