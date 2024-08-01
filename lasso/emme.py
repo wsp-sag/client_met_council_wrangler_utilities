@@ -297,10 +297,55 @@ def prepare_table_for_taz_drive_network(
         (links_df.A.isin(parameters.taz_N_list)) | (links_df.B.isin(parameters.taz_N_list))
     ].to_dict('records')
 
+    gtfs_shape_bus_routes = extract_gtfs_from_dir(input_dir)
+    gtfs_shape_bus_routes["next_node_id"] = gtfs_shape_bus_routes["shape_model_node_id"].shift(1)
+    gtfs_shape_bus_routes = gtfs_shape_bus_routes.sort_values(by=["shape_id", "shape_pt_sequence"])
+    gtfs_shape_bus_routes = gtfs_shape_bus_routes[(gtfs_shape_bus_routes["shape_pt_sequence"] != 1)]
+    gtfs_shape_bus_routes = gtfs_shape_bus_routes.drop_duplicates(subset=["shape_model_node_id", "next_node_id"])
+    gtfs_shape_bus_routes["has_bus_on_link"] = True
+    links_df = pd.merge(links_df, gtfs_shape_bus_routes[["shape_model_node_id", "next_node_id", "has_bus_on_link"]], 
+        left_on=["A", "B"],
+        right_on=["shape_model_node_id", "next_node_id"],
+        how="left"
+    ).drop(columns=["shape_model_node_id", "next_node_id"])
+    links_df["has_bus_on_link"] = links_df["has_bus_on_link"].fillna(False)
+    
+    # links to keep:
+    # ft > 7
+    # links containing bus routes
+    # toll booths > 1
+    # toll sag > 1 
+    # make sure connectors gone
+    # bus links need to be on
+    # wayy after all this is good-> need to filter out broken connecters
+    # if centroid is empty -> build new connectors
+    # rebuild connectors for all TAZ
+    #TODO test 6 is less links then previous implementatoin
+    
+    # we want to include managed lanes connectors as well
+    managed_nodes = list(set(links_df[links_df["managed"] == 1]["A"]) | set(links_df[links_df["managed"] == 1]["B"]))
+    links_df["managed_lane_connector"] = (links_df["ft"] == 8) & (links_df["A"].isin(managed_nodes) | links_df["B"].isin(managed_nodes))
+    
     drive_links_df = links_df[
-        ~(links_df.A.isin(parameters.taz_N_list + parameters.maz_N_list)) & 
-        ~(links_df.B.isin(parameters.taz_N_list + parameters.maz_N_list)) &
-        ((links_df.drive_access == 1) & (links_df.assignable == 1))
+        (
+            ~(links_df.A.isin(parameters.taz_N_list + parameters.maz_N_list)) & 
+            ~(links_df.B.isin(parameters.taz_N_list + parameters.maz_N_list)) &
+            ( # ft > 7 should be kept in the nework
+                (
+                    (links_df.drive_access == 1) & 
+                    (links_df.ft <= 7)
+                ) |
+                ( # is a tollsegment, should be kept within the network
+                    (links_df.tollseg != 0) |
+                    (links_df.tollbooth != 0)
+                ) 
+            )
+        ) | links_df["has_bus_on_link"] | links_df["managed_lane_connector"] # special cases we would like tp keep
+    ].copy()
+
+    centroid_connector_links = links_df[
+        (links_df.A.isin(parameters.taz_N_list + parameters.maz_N_list)) |
+        (links_df.B.isin(parameters.taz_N_list + parameters.maz_N_list))
     ].copy()
 
     model_tables["link_table"] = drive_links_df.to_dict('records')
