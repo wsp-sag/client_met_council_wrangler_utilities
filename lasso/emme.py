@@ -3,6 +3,7 @@
 import os as _os
 from collections import defaultdict as _defaultdict
 from copy import deepcopy as _copy
+from pathlib import Path
 
 from pandas.core.frame import DataFrame
 
@@ -50,6 +51,7 @@ def create_emme_network(
     path: Optional[str]="",
     write_drive_network: bool = False,
     write_taz_drive_network: bool = False,
+    gtfs_directory: Optional[str] = None,
     write_maz_drive_network: bool = False,
     write_maz_active_modes_network: bool = False,
     write_tap_transit_network: bool = False,
@@ -90,6 +92,10 @@ def create_emme_network(
     out_dir = path
     
     model_tables = {}
+
+
+    if write_taz_drive_network and (gtfs_directory is None):
+        raise ValueError("'gtfs_directory' is required when writing a taz network")
 
     if roadway_network:
         links_df = roadway_network.links_mtc_df.copy()
@@ -204,7 +210,8 @@ def create_emme_network(
         model_tables = prepare_table_for_taz_drive_network(
             nodes_df=nodes_df,
             links_df=links_df,
-            parameters=parameters
+            parameters=parameters,
+            gtfs_directory=gtfs_directory,
         )
 
         setup = SetupEmme(model_tables, out_dir, _NAME, include_transit, parameters)
@@ -268,10 +275,24 @@ def create_emme_network(
         setup = SetupEmme(model_tables, out_dir, _NAME, include_transit, parameters)
         setup.run()
 
+
+def extract_gtfs_from_dir(path: str):
+    path = Path(path)
+    shapes = pd.read_csv(path / "shapes.txt")
+    trips = pd.read_csv(path / "trips.txt")
+    routes = pd.read_csv(path / "routes.txt")
+
+    bus_routes = routes.loc[routes["route_type"].isin([3]), "route_id"]
+    bus_trips = trips.loc[trips["route_id"].isin(bus_routes), "shape_id"]
+    bus_shapes = shapes[shapes["shape_id"].isin(bus_trips)]
+    return bus_shapes
+
 def prepare_table_for_taz_drive_network(
     nodes_df,
     links_df,
     parameters,
+    gtfs_directory,
+    maximum_ft=7,
 ):
 
     """
@@ -297,7 +318,9 @@ def prepare_table_for_taz_drive_network(
         (links_df.A.isin(parameters.taz_N_list)) | (links_df.B.isin(parameters.taz_N_list))
     ].to_dict('records')
 
-    gtfs_shape_bus_routes = extract_gtfs_from_dir(input_dir)
+    # get the links where buses drive on the network
+    gtfs_shape_bus_routes = extract_gtfs_from_dir(gtfs_directory)
+    # assuming shape_model_node_id are in order for this step
     gtfs_shape_bus_routes["next_node_id"] = gtfs_shape_bus_routes["shape_model_node_id"].shift(1)
     gtfs_shape_bus_routes = gtfs_shape_bus_routes.sort_values(by=["shape_id", "shape_pt_sequence"])
     gtfs_shape_bus_routes = gtfs_shape_bus_routes[(gtfs_shape_bus_routes["shape_pt_sequence"] != 1)]
@@ -311,10 +334,10 @@ def prepare_table_for_taz_drive_network(
     links_df["has_bus_on_link"] = links_df["has_bus_on_link"].fillna(False)
     
     # links to keep:
-    # ft > 7
+    # ft >= 7
     # links containing bus routes
-    # toll booths > 1
-    # toll sag > 1 
+    # toll booths >= 1
+    # toll sag >= 1 
     # make sure connectors gone
     # bus links need to be on
     # wayy after all this is good-> need to filter out broken connecters
@@ -333,7 +356,7 @@ def prepare_table_for_taz_drive_network(
             ( # ft > 7 should be kept in the nework
                 (
                     (links_df.drive_access == 1) & 
-                    (links_df.ft <= 7)
+                    (links_df.ft <= maximum_ft)
                 ) |
                 ( # is a tollsegment, should be kept within the network
                     (links_df.tollseg != 0) |
@@ -341,11 +364,6 @@ def prepare_table_for_taz_drive_network(
                 ) 
             )
         ) | links_df["has_bus_on_link"] | links_df["managed_lane_connector"] # special cases we would like tp keep
-    ].copy()
-
-    centroid_connector_links = links_df[
-        (links_df.A.isin(parameters.taz_N_list + parameters.maz_N_list)) |
-        (links_df.B.isin(parameters.taz_N_list + parameters.maz_N_list))
     ].copy()
 
     model_tables["link_table"] = drive_links_df.to_dict('records')
