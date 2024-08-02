@@ -112,9 +112,11 @@ def create_emme_network(
     elif (len(links_df)>0) & (len(nodes_df)>0):
         links_df = links_df.copy()
         nodes_df = nodes_df.sort_values("N").reset_index(drop=True).copy()
+        if shapes_df is not None:
+            shapes_df = shapes_df.copy()
 
     else:
-        msg = "Missing roadway network to write to emme, please specify either model_net or links_df and nodes_df."
+        msg = "Missing roadway network to write to emme, please specify either model_net or links_df and nodes_df"
         WranglerLogger.error(msg)
         raise ValueError(msg)
 
@@ -206,6 +208,7 @@ def create_emme_network(
         model_tables = prepare_table_for_drive_network(
             nodes_df=nodes_df,
             links_df=links_df,
+            shapes_df=shapes_df,
             parameters=parameters,
             gtfs_directory=gtfs_directory,
         )
@@ -274,11 +277,11 @@ def extract_gtfs_from_dir(path: str):
 def prepare_table_for_drive_network(
     nodes_df: pd.DataFrame,
     links_df: pd.DataFrame,
+    shapes_df: Optional[GeoDataFrame],
     parameters: Parameters,
     gtfs_directory: Union[Path, str],
     maximum_ft: int=7,
     regenerate_connectors: bool=False,
-    shapes_df: Optional[gpd.GeoDataFrame] = None,
 ):
 
     """
@@ -301,6 +304,9 @@ def prepare_table_for_drive_network(
         nodes_df.N.isin(parameters.taz_N_list)
     ].to_dict('records')
 
+    model_tables["connector_table"] = links_df[
+        (links_df.A.isin(parameters.taz_N_list)) | (links_df.B.isin(parameters.taz_N_list))
+    ].to_dict('records')
 
     # get the links where buses drive on the network
     gtfs_shape_bus_routes = extract_gtfs_from_dir(gtfs_directory)
@@ -354,10 +360,19 @@ def prepare_table_for_drive_network(
     else:
         # check ranch is installed
         if ranch is None:
-            raise ImportError("package 'Ranch' is not installed, please go to https://github.com/BayAreaMetro/Ranch for install instructions")
-        else:
+            raise ImportError("package 'ranch' is not installed, please go to https://github.com/BayAreaMetro/Ranch for install instructions")
+        
+        if shapes_df is None:
+            raise ValueError("shapes_df must be provided to regenerate connectors")
 
-            raise NotImplementedError()
+        # regenerate connectors
+        ranch_roadway = ranch.Roadway(nodes_df, links_df, shapes_df, parameters)
+        ranch_roadway.build_centroid_connectors(build_taz_active_modes=True, build_maz_drive=True)
+        model_tables["connector_table"] = ranch_roadway.links_df[
+            (ranch_roadway.links_df.A.isin(parameters.taz_N_list)) | (ranch_roadway.links_df.B.isin(parameters.taz_N_list))
+        ].to_dict('records')
+        
+
 
 
 
