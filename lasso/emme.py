@@ -261,9 +261,9 @@ def create_emme_network(
 
 def extract_bus_shapes(transit_network: StandardTransit, route_type_bus_id:int = 3):
     
-    shapes = transit_network.feed["shapes"]
-    trips = transit_network.feed["trips"]
-    routes = transit_network.feed["routes"]
+    shapes = transit_network.feed["shapes"].copy()
+    trips = transit_network.feed["trips"].copy()
+    routes = transit_network.feed["routes"].copy()
 
     bus_routes = routes.loc[routes["route_type"].isin([route_type_bus_id]), "route_id"]
     bus_trips = trips.loc[trips["route_id"].isin(bus_routes), "shape_id"]
