@@ -59,7 +59,6 @@ def create_emme_network(
     name: Optional[str]="",
     path: Optional[str]="",
     write_drive_network: bool = False,
-    gtfs_directory: Optional[str] = None,
     write_maz_active_modes_network: bool = False,
     write_tap_transit_network: bool = False,
     write_taz_transit_network: bool = False,
@@ -100,9 +99,6 @@ def create_emme_network(
     
     model_tables = {}
 
-
-    if write_drive_network and (gtfs_directory is None):
-        raise ValueError("'gtfs_directory' is required when writing a taz network")
 
     if roadway_network:
         links_df = roadway_network.links_mtc_df.copy()
@@ -209,8 +205,8 @@ def create_emme_network(
             nodes_df=nodes_df,
             links_df=links_df,
             shapes_df=shapes_df,
+            transit_network=transit_network,
             parameters=parameters,
-            gtfs_directory=gtfs_directory,
         )
 
         setup = SetupEmme(model_tables, out_dir, _NAME, include_transit, parameters)
@@ -263,13 +259,13 @@ def create_emme_network(
         setup.run()
 
 
-def extract_gtfs_from_dir(path: str):
-    path = Path(path)
-    shapes = pd.read_csv(path / "shapes.txt")
-    trips = pd.read_csv(path / "trips.txt")
-    routes = pd.read_csv(path / "routes.txt")
+def extract_bus_shapes(transit_network: StandardTransit, route_type_bus_id:int = 3):
+    
+    shapes = transit_network.feed["shapes"]
+    trips = transit_network.feed["trips"]
+    routes = transit_network.feed["routes"]
 
-    bus_routes = routes.loc[routes["route_type"].isin([3]), "route_id"]
+    bus_routes = routes.loc[routes["route_type"].isin([route_type_bus_id]), "route_id"]
     bus_trips = trips.loc[trips["route_id"].isin(bus_routes), "shape_id"]
     bus_shapes = shapes[shapes["shape_id"].isin(bus_trips)]
     return bus_shapes
@@ -277,9 +273,9 @@ def extract_gtfs_from_dir(path: str):
 def prepare_table_for_drive_network(
     nodes_df: pd.DataFrame,
     links_df: pd.DataFrame,
+    transit_network: StandardTransit,
     shapes_df: Optional[GeoDataFrame],
     parameters: Parameters,
-    gtfs_directory: Union[Path, str],
     maximum_ft: int=7,
     regenerate_connectors: bool=False,
 ):
@@ -309,7 +305,9 @@ def prepare_table_for_drive_network(
     ].to_dict('records')
 
     # get the links where buses drive on the network
-    gtfs_shape_bus_routes = extract_gtfs_from_dir(gtfs_directory)
+    gtfs_shape_bus_routes = extract_bus_shapes(transit_network)
+    print(gtfs_shape_bus_routes)
+
     # assuming shape_model_node_id are in order for this step
     gtfs_shape_bus_routes["next_node_id"] = gtfs_shape_bus_routes["shape_model_node_id"].shift(1)
     gtfs_shape_bus_routes = gtfs_shape_bus_routes.sort_values(by=["shape_id", "shape_pt_sequence"])
