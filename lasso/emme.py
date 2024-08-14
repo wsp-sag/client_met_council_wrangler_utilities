@@ -64,7 +64,8 @@ def create_emme_network(
     write_taz_transit_network: bool = False,
     parameters: Union[Parameters, dict] = {},
     polygon_file_to_split_active_modes_network: Optional[str] = None,
-    polygon_variable_to_split_active_modes_network: Optional[str] = None
+    polygon_variable_to_split_active_modes_network: Optional[str] = None,
+    regenerate_connectors: Optional[bool] = False,
 ):
     """
     method that calls emme to write out EMME network from Lasso network
@@ -207,6 +208,7 @@ def create_emme_network(
             shapes_df=shapes_df,
             transit_network=transit_network,
             parameters=parameters,
+            regenerate_connectors=regenerate_connectors,
         )
 
         setup = SetupEmme(model_tables, out_dir, _NAME, include_transit, parameters)
@@ -261,14 +263,14 @@ def create_emme_network(
 
 def extract_bus_shapes(transit_network: StandardTransit, route_type_bus_id:int = 3):
     
-    shapes = transit_network.feed["shapes"].copy()
-    trips = transit_network.feed["trips"].copy()
-    routes = transit_network.feed["routes"].copy()
+    shapes_df = transit_network.feed["shapes"].copy()
+    trips_df = transit_network.feed["trips"].copy()
+    routes_df = transit_network.feed["routes"].copy()
 
-    bus_routes = routes.loc[routes["route_type"].isin([route_type_bus_id]), "route_id"]
-    bus_trips = trips.loc[trips["route_id"].isin(bus_routes), "shape_id"]
-    bus_shapes = shapes[shapes["shape_id"].isin(bus_trips)]
-    return bus_shapes
+    bus_routes_df = routes_df.loc[routes_df["route_type"].isin([route_type_bus_id]), "route_id"]
+    bus_trips_df = trips_df.loc[trips_df["route_id"].isin(bus_routes_df), "shape_id"]
+    bus_shapes_df = shapes_df[shapes_df["shape_id"].isin(bus_trips_df)]
+    return bus_shapes_df
 
 def tag_if_link_contains_bus(links_df: gpd.GeoDataFrame, gtfs_shape_bus_routes: gpd.GeoDataFrame):
     links_df = links_df.copy()
@@ -303,9 +305,14 @@ def prepare_table_for_drive_network(
 ):
 
     """
-    prepare model table for drive network (including taz and maz nodes), in which taz/maz nodes are centroids
-    keep links that are:
-
+    prepare model table for drive network (including taz and maz nodes), in which taz/maz nodes are centroids and 
+    connected to the remaining network. 
+    The conditions for a link to be kept in the network is if it meets any of the below conditions:
+     - ft <= 7
+     - links containing bus routes acording to transit_network.feed
+     - toll booths >= 1
+     - toll sag >= 1 
+     - link is a managed road - connector
 
     Arguments:
         nodes_df -- node database
@@ -333,16 +340,7 @@ def prepare_table_for_drive_network(
 
     links_df = tag_if_link_contains_bus(links_df, gtfs_shape_bus_routes)
     
-    # links to keep:
-    # ft <= 7
-    # links containing bus routes
-    # toll booths >= 1
-    # toll sag >= 1 
-    # make sure connectors gone
-    # bus links need to be on
-    # if centroid is empty -> build new connectors
-    # rebuild connectors for all TAZ
-    # we want to include managed lanes connectors as well
+    # filter drive links by condition mentioned in the doc string
     managed_nodes = list(set(links_df[links_df["managed"] == 1]["A"]) | set(links_df[links_df["managed"] == 1]["B"]))
     links_df["managed_lane_connector"] = (links_df["ft"] == 8) & (links_df["A"].isin(managed_nodes) | links_df["B"].isin(managed_nodes))
     
@@ -365,8 +363,8 @@ def prepare_table_for_drive_network(
 
     if not regenerate_connectors:
         model_tables["connector_table"] = links_df[
-            (ranch_roadway.links_df.A.isin(parameters.taz_N_list + parameters.maz_N_list)) | 
-            (ranch_roadway.links_df.B.isin(parameters.taz_N_list + parameters.maz_N_list))
+            (links_df.A.isin(parameters.taz_N_list + parameters.maz_N_list)) | 
+            (links_df.B.isin(parameters.taz_N_list + parameters.maz_N_list))
         ].to_dict('records')
     else:
         # check ranch is installed
@@ -377,7 +375,10 @@ def prepare_table_for_drive_network(
             raise ValueError("shapes_df must be provided to regenerate connectors")
 
         # regenerate connectors
-        ranch_roadway = ranch.Roadway(nodes_df, links_df, shapes_df, parameters)
+        ranch_params ={
+            "standard_crs": links_df.crs
+        }
+        ranch_roadway = ranch.Roadway(nodes_df, links_df, shapes_df, ranch_params)
         ranch_roadway.build_centroid_connectors(build_taz_active_modes=True, build_maz_drive=True)
         model_tables["connector_table"] = ranch_roadway.links_df[
             (ranch_roadway.links_df.A.isin(parameters.taz_N_list + parameters.maz_N_list)) | 
