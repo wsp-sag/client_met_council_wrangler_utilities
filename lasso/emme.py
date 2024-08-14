@@ -366,9 +366,11 @@ def prepare_table_for_drive_network(
             )
         ) | links_df["has_bus_on_link"] | links_df["managed_lane_connector"] # special cases we would like tp keep
     ].copy()
+
     if not regenerate_connectors:
         model_tables["connector_table"] = links_df[
-            (links_df.A.isin(parameters.taz_N_list)) | (links_df.B.isin(parameters.taz_N_list))
+            (ranch_roadway.links_df.A.isin(parameters.taz_N_list + parameters.maz_N_list)) | 
+            (ranch_roadway.links_df.B.isin(parameters.taz_N_list + parameters.maz_N_list))
         ].to_dict('records')
     else:
         # check ranch is installed
@@ -382,7 +384,8 @@ def prepare_table_for_drive_network(
         ranch_roadway = ranch.Roadway(nodes_df, links_df, shapes_df, parameters)
         ranch_roadway.build_centroid_connectors(build_taz_active_modes=True, build_maz_drive=True)
         model_tables["connector_table"] = ranch_roadway.links_df[
-            (ranch_roadway.links_df.A.isin(parameters.taz_N_list)) | (ranch_roadway.links_df.B.isin(parameters.taz_N_list))
+            (ranch_roadway.links_df.A.isin(parameters.taz_N_list + parameters.maz_N_list)) | 
+            (ranch_roadway.links_df.B.isin(parameters.taz_N_list + parameters.maz_N_list))
         ].to_dict('records')
         
 
