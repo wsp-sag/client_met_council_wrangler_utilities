@@ -346,8 +346,9 @@ def prepare_table_for_drive_network(
     
     drive_links_df = links_df[
         (
-            ~(links_df.A.isin(parameters.taz_N_list + parameters.maz_N_list)) & 
-            ~(links_df.B.isin(parameters.taz_N_list + parameters.maz_N_list)) &
+            # just Remove taz connectors, maz connectors / nodes will remain as regular nodes
+            ~(links_df.A.isin(parameters.taz_N_list)) & 
+            ~(links_df.B.isin(parameters.taz_N_list)) &
             ( # ft <= 7 should be kept in the nework
                 (
                     (links_df.drive_access == 1) & 
@@ -363,8 +364,8 @@ def prepare_table_for_drive_network(
 
     if not regenerate_connectors:
         model_tables["connector_table"] = links_df[
-            (links_df.A.isin(parameters.taz_N_list + parameters.maz_N_list)) | 
-            (links_df.B.isin(parameters.taz_N_list + parameters.maz_N_list))
+            (links_df.A.isin(parameters.taz_N_list)) | 
+            (links_df.B.isin(parameters.taz_N_list))
         ].to_dict('records')
     else:
         # check ranch is installed
@@ -381,12 +382,10 @@ def prepare_table_for_drive_network(
         ranch_roadway = ranch.Roadway(nodes_df, links_df, shapes_df, ranch_params)
         ranch_roadway.build_centroid_connectors(build_taz_active_modes=True, build_maz_drive=True)
         model_tables["connector_table"] = ranch_roadway.links_df[
-            (ranch_roadway.links_df.A.isin(parameters.taz_N_list + parameters.maz_N_list)) | 
-            (ranch_roadway.links_df.B.isin(parameters.taz_N_list + parameters.maz_N_list))
+            (ranch_roadway.links_df.A.isin(parameters.taz_N_list)) | 
+            (ranch_roadway.links_df.B.isin(parameters.taz_N_list))
         ].to_dict('records')
         
-
-
 
 
     model_tables["link_table"] = drive_links_df.to_dict('records')
