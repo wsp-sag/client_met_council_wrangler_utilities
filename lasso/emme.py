@@ -306,7 +306,6 @@ def prepare_table_for_drive_network(
 
     # get the links where buses drive on the network
     gtfs_shape_bus_routes = extract_bus_shapes(transit_network)
-    print(gtfs_shape_bus_routes)
 
     # assuming shape_model_node_id are in order for this step
     gtfs_shape_bus_routes["next_node_id"] = gtfs_shape_bus_routes["shape_model_node_id"].shift(1)
@@ -314,6 +313,11 @@ def prepare_table_for_drive_network(
     gtfs_shape_bus_routes = gtfs_shape_bus_routes[(gtfs_shape_bus_routes["shape_pt_sequence"] != 1)]
     gtfs_shape_bus_routes = gtfs_shape_bus_routes.drop_duplicates(subset=["shape_model_node_id", "next_node_id"])
     gtfs_shape_bus_routes["has_bus_on_link"] = True
+    gtfs_shape_bus_routes["shape_model_node_id"] = pd.to_numeric(gtfs_shape_bus_routes["shape_model_node_id"])
+    gtfs_shape_bus_routes["next_node_id"] = pd.to_numeric(gtfs_shape_bus_routes["next_node_id"])
+    print(gtfs_shape_bus_routes[["shape_model_node_id", "next_node_id", "has_bus_on_link"]].info())
+    print(links_df[["A", "B"]].info())
+
     links_df = pd.merge(links_df, gtfs_shape_bus_routes[["shape_model_node_id", "next_node_id", "has_bus_on_link"]], 
         left_on=["A", "B"],
         right_on=["shape_model_node_id", "next_node_id"],
@@ -322,7 +326,7 @@ def prepare_table_for_drive_network(
     links_df["has_bus_on_link"] = links_df["has_bus_on_link"].fillna(False)
     
     # links to keep:
-    # ft >= 7
+    # ft <= 7
     # links containing bus routes
     # toll booths >= 1
     # toll sag >= 1 
