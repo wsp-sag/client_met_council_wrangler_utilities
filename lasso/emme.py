@@ -328,10 +328,6 @@ def prepare_table_for_drive_network(
         nodes_df.N.isin(parameters.taz_N_list)
     ].to_dict('records')
 
-    model_tables["connector_table"] = links_df[
-        (links_df.A.isin(parameters.taz_N_list)) | (links_df.B.isin(parameters.taz_N_list))
-    ].to_dict('records')
-
     # get the links where buses drive on the network
     gtfs_shape_bus_routes = extract_bus_shapes(transit_network)
 
