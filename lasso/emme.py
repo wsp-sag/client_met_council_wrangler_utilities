@@ -270,6 +270,28 @@ def extract_bus_shapes(transit_network: StandardTransit, route_type_bus_id:int =
     bus_shapes = shapes[shapes["shape_id"].isin(bus_trips)]
     return bus_shapes
 
+def tag_if_link_contains_bus(links_df: gpd.GeoDataFrame, gtfs_shape_bus_routes: gpd.GeoDataFrame):
+    links_df = links_df.copy()
+    gtfs_shape_bus_routes = gtfs_shape_bus_routes,copy()
+
+    # links are defined as pairs of nodes, so get next node (this assumes order)
+    gtfs_shape_bus_routes["next_node_id"] = gtfs_shape_bus_routes["shape_model_node_id"].shift(1)
+    gtfs_shape_bus_routes = gtfs_shape_bus_routes.sort_values(by=["shape_id", "shape_pt_sequence"])
+    gtfs_shape_bus_routes = gtfs_shape_bus_routes[(gtfs_shape_bus_routes["shape_pt_sequence"] != 1)]
+    gtfs_shape_bus_routes = gtfs_shape_bus_routes.drop_duplicates(subset=["shape_model_node_id", "next_node_id"])
+    gtfs_shape_bus_routes["has_bus_on_link"] = True
+    gtfs_shape_bus_routes["shape_model_node_id"] = pd.to_numeric(gtfs_shape_bus_routes["shape_model_node_id"])
+    gtfs_shape_bus_routes["next_node_id"] = pd.to_numeric(gtfs_shape_bus_routes["next_node_id"])
+
+    links_df = pd.merge(links_df, gtfs_shape_bus_routes[["shape_model_node_id", "next_node_id", "has_bus_on_link"]], 
+        left_on=["A", "B"],
+        right_on=["shape_model_node_id", "next_node_id"],
+        how="left"
+    ).drop(columns=["shape_model_node_id", "next_node_id"])
+    links_df["has_bus_on_link"] = links_df["has_bus_on_link"].fillna(False)
+
+    return links_df
+
 def prepare_table_for_drive_network(
     nodes_df: pd.DataFrame,
     links_df: pd.DataFrame,
@@ -307,23 +329,7 @@ def prepare_table_for_drive_network(
     # get the links where buses drive on the network
     gtfs_shape_bus_routes = extract_bus_shapes(transit_network)
 
-    # assuming shape_model_node_id are in order for this step
-    gtfs_shape_bus_routes["next_node_id"] = gtfs_shape_bus_routes["shape_model_node_id"].shift(1)
-    gtfs_shape_bus_routes = gtfs_shape_bus_routes.sort_values(by=["shape_id", "shape_pt_sequence"])
-    gtfs_shape_bus_routes = gtfs_shape_bus_routes[(gtfs_shape_bus_routes["shape_pt_sequence"] != 1)]
-    gtfs_shape_bus_routes = gtfs_shape_bus_routes.drop_duplicates(subset=["shape_model_node_id", "next_node_id"])
-    gtfs_shape_bus_routes["has_bus_on_link"] = True
-    gtfs_shape_bus_routes["shape_model_node_id"] = pd.to_numeric(gtfs_shape_bus_routes["shape_model_node_id"])
-    gtfs_shape_bus_routes["next_node_id"] = pd.to_numeric(gtfs_shape_bus_routes["next_node_id"])
-    print(gtfs_shape_bus_routes[["shape_model_node_id", "next_node_id", "has_bus_on_link"]].info())
-    print(links_df[["A", "B"]].info())
-
-    links_df = pd.merge(links_df, gtfs_shape_bus_routes[["shape_model_node_id", "next_node_id", "has_bus_on_link"]], 
-        left_on=["A", "B"],
-        right_on=["shape_model_node_id", "next_node_id"],
-        how="left"
-    ).drop(columns=["shape_model_node_id", "next_node_id"])
-    links_df["has_bus_on_link"] = links_df["has_bus_on_link"].fillna(False)
+    links_df = tag_if_link_contains_bus(links_df, gtfs_shape_bus_routes)
     
     # links to keep:
     # ft <= 7
@@ -334,7 +340,6 @@ def prepare_table_for_drive_network(
     # bus links need to be on
     # if centroid is empty -> build new connectors
     # rebuild connectors for all TAZ
-
     # we want to include managed lanes connectors as well
     managed_nodes = list(set(links_df[links_df["managed"] == 1]["A"]) | set(links_df[links_df["managed"] == 1]["B"]))
     links_df["managed_lane_connector"] = (links_df["ft"] == 8) & (links_df["A"].isin(managed_nodes) | links_df["B"].isin(managed_nodes))
