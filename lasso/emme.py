@@ -303,12 +303,18 @@ def prepare_table_for_drive_network(
 ):
 
     """
-    prepare model table for taz-scale drive network, in which taz nodes are centroids
-    keep links that are drive_access == 1 and assignable
+    prepare model table for drive network (including taz and maz nodes), in which taz/maz nodes are centroids
+    keep links that are:
+
 
     Arguments:
         nodes_df -- node database
         links_df -- link database
+        transit_network -- Standard Transit network containing bus route information
+        shapes_df -- shapes database
+        parameters -- emmebanke creation paramerters parameters
+        maximum_ft -- maximum Facility type to include 
+        regenerate_connectors -- Bool: option to regenerate connectors after the relevent links have been dropped 
     
     Return:
         dictionary of model network settings
