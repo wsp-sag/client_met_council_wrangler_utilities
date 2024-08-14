@@ -343,7 +343,7 @@ def prepare_table_for_drive_network(
         (
             ~(links_df.A.isin(parameters.taz_N_list + parameters.maz_N_list)) & 
             ~(links_df.B.isin(parameters.taz_N_list + parameters.maz_N_list)) &
-            ( # ft > 7 should be kept in the nework
+            ( # ft <= 7 should be kept in the nework
                 (
                     (links_df.drive_access == 1) & 
                     (links_df.ft <= maximum_ft)
