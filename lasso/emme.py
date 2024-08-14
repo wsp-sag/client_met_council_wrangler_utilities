@@ -272,7 +272,7 @@ def extract_bus_shapes(transit_network: StandardTransit, route_type_bus_id:int =
 
 def tag_if_link_contains_bus(links_df: gpd.GeoDataFrame, gtfs_shape_bus_routes: gpd.GeoDataFrame):
     links_df = links_df.copy()
-    gtfs_shape_bus_routes = gtfs_shape_bus_routes,copy()
+    gtfs_shape_bus_routes = gtfs_shape_bus_routes.copy()
 
     # links are defined as pairs of nodes, so get next node (this assumes order)
     gtfs_shape_bus_routes["next_node_id"] = gtfs_shape_bus_routes["shape_model_node_id"].shift(1)
