@@ -66,6 +66,8 @@ def create_emme_network(
     polygon_file_to_split_active_modes_network: Optional[str] = None,
     polygon_variable_to_split_active_modes_network: Optional[str] = None,
     regenerate_connectors: Optional[bool] = False,
+    taz_zone_shapefile_path: Optional[str] = None,
+    maz_zone_shapefile_path: Optional[str] = None,
 ):
     """
     method that calls emme to write out EMME network from Lasso network
@@ -209,6 +211,8 @@ def create_emme_network(
             transit_network=transit_network,
             parameters=parameters,
             regenerate_connectors=regenerate_connectors,
+            taz_zone_shapefile_path=taz_zone_shapefile_path,
+            maz_zone_shapefile_path=maz_zone_shapefile_path,
         )
 
         setup = SetupEmme(model_tables, out_dir, _NAME, include_transit, parameters)
@@ -294,6 +298,22 @@ def tag_if_link_contains_bus(links_df: gpd.GeoDataFrame, gtfs_shape_bus_routes: 
 
     return links_df
 
+def find_parent_ranch_dir(ranch_file_path: Union[Path, str]):
+    """
+    In Case __init__ file moves ect, we will take any file in the ranch directory and return 
+    
+    """
+    path = Path(ranch_file_path)
+    while True:
+        prev_path=path
+        path=path.parent
+        if path.name != "ranch" and prev_path.name == "ranch":
+            return prev_path
+        
+        if len(path.parts) == 1:
+            msg = f"Expected Ranch Directory above '{ranch_file_path}' but could not find directory"
+            raise RuntimeError(msg)
+
 def prepare_table_for_drive_network(
     nodes_df: pd.DataFrame,
     links_df: pd.DataFrame,
@@ -302,6 +322,8 @@ def prepare_table_for_drive_network(
     parameters: Parameters,
     maximum_ft: int=7,
     regenerate_connectors: bool=False,
+    taz_zone_shapefile_path: Optional[str] = None,
+    maz_zone_shapefile_path: Optional[str] = None,
 ):
 
     """
@@ -343,7 +365,7 @@ def prepare_table_for_drive_network(
     # filter drive links by condition mentioned in the doc string
     managed_nodes = list(set(links_df[links_df["managed"] == 1]["A"]) | set(links_df[links_df["managed"] == 1]["B"]))
     links_df["managed_lane_connector"] = (links_df["ft"] == 8) & (links_df["A"].isin(managed_nodes) | links_df["B"].isin(managed_nodes))
-    
+
     drive_links_df = links_df[
         (
             # just Remove taz connectors, maz connectors / nodes will remain as regular nodes
@@ -359,7 +381,7 @@ def prepare_table_for_drive_network(
                     (links_df.tollbooth != 0)
                 ) 
             )
-        ) | links_df["has_bus_on_link"] | links_df["managed_lane_connector"] # special cases we would like tp keep
+        ) | links_df["has_bus_on_link"] | links_df["managed_lane_connector"] | (links_df["cntype"] == "MAZ") # Maz is filtered out by links_df.fg <= maximum_ft 
     ].copy()
 
     if not regenerate_connectors:
@@ -371,21 +393,42 @@ def prepare_table_for_drive_network(
         # check ranch is installed
         if ranch is None:
             raise ImportError("package 'ranch' is not installed, please go to https://github.com/BayAreaMetro/Ranch for install instructions")
-        
         if shapes_df is None:
             raise ValueError("shapes_df must be provided to regenerate connectors")
+        if taz_zone_shapefile_path is None:
+            raise ValueError("taz_zone_shapefile_path must be passed in when regenerate_connectors=True")
+        if maz_zone_shapefile_path is None:
+            raise ValueError("maz_zone_shapefile_path must be passed in when regenerate_connectors=True")
 
         # regenerate connectors
-        ranch_params ={
-            "standard_crs": links_df.crs
-        }
-        ranch_roadway = ranch.Roadway(nodes_df, links_df, shapes_df, ranch_params)
-        ranch_roadway.build_centroid_connectors(build_taz_active_modes=True, build_maz_drive=True)
+        ranch_dir = find_parent_ranch_dir(ranch.__file__)
+        ranch_params=ranch.Parameters(
+            ranch_base_dir=ranch_dir,
+        )
+        
+        links_df = links_df[links_df["cntype"] != "MAZ"]
+        ranch_roadway = ranch.Roadway(nodes_df, links_df.drop(columns=["index_left", "index_right"], errors="ignore"), shapes_df, ranch_params)
+        ranch_roadway.build_centroid_connectors(build_taz_active_modes=True, build_maz_drive=True, 
+            input_taz_polygon_file=taz_zone_shapefile_path, #r"\\corp.pbwan.net\us\CentralData\DCCLDA00\Standard\sag\projects\MTC\31000152\Network_Rebuild\LP_Local_folders\data\external\mtc\Model Geography\Zones v1.0\tazs.shp",
+            input_maz_polygon_file=maz_zone_shapefile_path, #r"\\corp.pbwan.net\us\CentralData\DCCLDA00\Standard\sag\projects\MTC\31000152\Network_Rebuild\LP_Local_folders\data\external\mtc\Model Geography\Zones v1.0\mazs.shp",
+        )
+
         model_tables["connector_table"] = ranch_roadway.links_df[
             (ranch_roadway.links_df.A.isin(parameters.taz_N_list)) | 
             (ranch_roadway.links_df.B.isin(parameters.taz_N_list))
         ].to_dict('records')
-        
+
+        # add the new maz links back in 
+        drive_links_df = pd.concat(
+            [
+                drive_links_df, 
+                ranch_roadway.links_df[
+                    (ranch_roadway.links_df.A.isin(parameters.maz_N_list)) | 
+                    (ranch_roadway.links_df.B.isin(parameters.maz_N_list))
+                ]
+            ]
+        )
+
 
 
     model_tables["link_table"] = drive_links_df.to_dict('records')
