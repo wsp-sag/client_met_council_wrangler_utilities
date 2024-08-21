@@ -91,6 +91,8 @@ def create_emme_network(
                                 due to emme's limitation on number of links and nodes
         polygon_variable_to_split_active_modes_network: unqiue key for each active modes subarea polygon, 
                                 will be used to name the emme file
+        taz_zone_shapefile_path: Path to shapefile containing taz level zones for generating taz centroid connectors
+        maz_zone_shapefile_path: Path to shapefile containing maz level zones for generating maz centroid connectors
 
     Return:
         None. Write out emme networks to the output dir
@@ -409,8 +411,8 @@ def prepare_table_for_drive_network(
         links_df = links_df[links_df["cntype"] != "MAZ"]
         ranch_roadway = ranch.Roadway(nodes_df, links_df.drop(columns=["index_left", "index_right"], errors="ignore"), shapes_df, ranch_params)
         ranch_roadway.build_centroid_connectors(build_taz_active_modes=True, build_maz_drive=True, 
-            input_taz_polygon_file=taz_zone_shapefile_path, #r"\\corp.pbwan.net\us\CentralData\DCCLDA00\Standard\sag\projects\MTC\31000152\Network_Rebuild\LP_Local_folders\data\external\mtc\Model Geography\Zones v1.0\tazs.shp",
-            input_maz_polygon_file=maz_zone_shapefile_path, #r"\\corp.pbwan.net\us\CentralData\DCCLDA00\Standard\sag\projects\MTC\31000152\Network_Rebuild\LP_Local_folders\data\external\mtc\Model Geography\Zones v1.0\mazs.shp",
+            input_taz_polygon_file=taz_zone_shapefile_path, 
+            input_maz_polygon_file=maz_zone_shapefile_path, 
         )
 
         model_tables["connector_table"] = ranch_roadway.links_df[
