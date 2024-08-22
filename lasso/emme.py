@@ -72,6 +72,7 @@ def create_emme_network(
     """
     method that calls emme to write out EMME network from Lasso network
 
+
     Arguments:
         roadway_network: lasso roadway network object, which has the model network for writting out.
                         if roadway_network is not given, then use links_df and nodes_df
@@ -79,11 +80,10 @@ def create_emme_network(
         include_transit: should the emme network include transit, default to False
         links_df: model links database for writting out, if not given, use roadway_network
         nodes_df: model nodes database for writting out, if not given, use roadway_network
+        shape_df: model shapes data set for writing out, if not given use roadway_network
         name: scenario name prefix
         path: output dir for emme
         write_drive_network: boolean, True if writing out drive network
-        write_taz_drive_network: boolean, True if writing out TAZ scale drive network, without MAZ
-        write_maz_drive_network: boolean, True if writing out MAZ scale drive network, without TAZ
         write_maz_active_modes_network: boolean, True if writing out MAZ scale walk and bike network
         write_tap_transit_network: boolean, True if writing out TAP sclae transit network
         parameters: lasso parameters
@@ -91,6 +91,8 @@ def create_emme_network(
                                 due to emme's limitation on number of links and nodes
         polygon_variable_to_split_active_modes_network: unqiue key for each active modes subarea polygon, 
                                 will be used to name the emme file
+        regenerate_connectors: boolean, if True connectors will be regenerated using Ranch - Note Ranch must be installed
+                                to envoke this option https://github.com/wsp-sag/Ranch.git
         taz_zone_shapefile_path: Path to shapefile containing taz level zones for generating taz centroid connectors
         maz_zone_shapefile_path: Path to shapefile containing maz level zones for generating maz centroid connectors
 
@@ -268,6 +270,7 @@ def create_emme_network(
 
 
 def extract_bus_shapes(transit_network: StandardTransit, route_type_bus_id:int = 3):
+    """Returns a list of Nodes that contain bus routes"""
     
     shapes_df = transit_network.feed["shapes"].copy()
     trips_df = transit_network.feed["trips"].copy()
@@ -279,6 +282,7 @@ def extract_bus_shapes(transit_network: StandardTransit, route_type_bus_id:int =
     return bus_shapes_df
 
 def tag_if_link_contains_bus(links_df: gpd.GeoDataFrame, gtfs_shape_bus_routes: gpd.GeoDataFrame):
+    """tags nodes where the starting node and the end node are bus route nodes"""
     links_df = links_df.copy()
     gtfs_shape_bus_routes = gtfs_shape_bus_routes.copy()
 
@@ -302,8 +306,7 @@ def tag_if_link_contains_bus(links_df: gpd.GeoDataFrame, gtfs_shape_bus_routes: 
 
 def find_parent_ranch_dir(ranch_file_path: Union[Path, str]):
     """
-    In Case __init__ file moves ect, we will take any file in the ranch directory and return 
-    
+    In Case __init__ file moves ect, we will take any file in the ranch directory and return the parent ranch dir
     """
     path = Path(ranch_file_path)
     while True:
