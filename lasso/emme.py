@@ -346,6 +346,8 @@ def prepare_table_for_drive_network(
         parameters -- emmebanke creation paramerters parameters
         maximum_ft -- maximum Facility type to include 
         regenerate_connectors -- Bool: option to regenerate connectors after the relevent links have been dropped 
+        taz_zone_shapefile_path -- path to shapefiles containing taz zones for centroid connectors 
+        maz_zone_shapefile_path -- path to shapefiles containing maz zones for centroid connectors 
     
     Return:
         dictionary of model network settings
@@ -414,6 +416,7 @@ def prepare_table_for_drive_network(
             input_taz_polygon_file=taz_zone_shapefile_path, 
             input_maz_polygon_file=maz_zone_shapefile_path, 
         )
+
 
         model_tables["connector_table"] = ranch_roadway.links_df[
             (ranch_roadway.links_df.A.isin(parameters.taz_N_list)) | 
