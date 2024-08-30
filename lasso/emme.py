@@ -398,6 +398,7 @@ def prepare_table_for_drive_network(
         ].to_dict('records')
     else:
         # check ranch is installed
+        raise NotImplementedError("Currently Waiting On task Order 6 to finish implementation")
         if ranch is None:
             raise ImportError("package 'ranch' is not installed, please go to https://github.com/BayAreaMetro/Ranch for install instructions")
         if shapes_df is None:
@@ -415,6 +416,7 @@ def prepare_table_for_drive_network(
         
         links_df = links_df[links_df["cntype"] != "MAZ"]
         ranch_roadway = ranch.Roadway(nodes_df, links_df.drop(columns=["index_left", "index_right"], errors="ignore"), shapes_df, ranch_params)
+        buid_taz_node_id
         ranch_roadway.build_centroid_connectors(build_taz_active_modes=True, build_maz_drive=True, 
             input_taz_polygon_file=taz_zone_shapefile_path, 
             input_maz_polygon_file=maz_zone_shapefile_path, 
