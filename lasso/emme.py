@@ -422,8 +422,8 @@ def prepare_table_for_drive_network(
             ranch_base_dir=ranch_dir,
         )
         
-        links_df = links_df[links_df["cntype"] != "MAZ"]
-        ranch_roadway = ranch.Roadway(nodes_df, links_df.drop(columns=["index_left", "index_right"], errors="ignore"), shapes_df, ranch_params)
+        drive_links_df = drive_links_df[drive_links_df["cntype"] != "MAZ"]
+        ranch_roadway = ranch.Roadway(nodes_df, drive_links_df.drop(columns=["index_left", "index_right"], errors="ignore"), shapes_df, ranch_params)
         buid_taz_node_id
         ranch_roadway.build_centroid_connectors(build_taz_active_modes=True, build_maz_drive=True, 
             input_taz_polygon_file=taz_zone_shapefile_path, 
