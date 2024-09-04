@@ -268,7 +268,7 @@ def create_emme_network(
         setup = SetupEmme(model_tables, out_dir, _NAME, include_transit, parameters)
         setup.run()
 
-
+#%%
 def extract_bus_shapes(transit_network: StandardTransit, route_type_bus_id:int = 3):
     """Returns a list of Nodes that contain bus routes"""
     
@@ -281,29 +281,37 @@ def extract_bus_shapes(transit_network: StandardTransit, route_type_bus_id:int =
     bus_shapes_df = shapes_df[shapes_df["shape_id"].isin(bus_trips_df)]
     return bus_shapes_df
 
+#%%
 def tag_if_link_contains_bus(links_df: gpd.GeoDataFrame, gtfs_shape_bus_routes: gpd.GeoDataFrame):
     """tags nodes where the starting node and the end node are bus route nodes"""
     links_df = links_df.copy()
     gtfs_shape_bus_routes = gtfs_shape_bus_routes.copy()
 
     # links are defined as pairs of nodes, so get next node (this assumes order)
-    gtfs_shape_bus_routes["next_node_id"] = gtfs_shape_bus_routes["shape_model_node_id"].shift(1)
+    gtfs_shape_bus_routes["shape_id"] = pd.to_numeric(gtfs_shape_bus_routes["shape_id"])
+    gtfs_shape_bus_routes["shape_pt_sequence"] = pd.to_numeric(gtfs_shape_bus_routes["shape_pt_sequence"])
     gtfs_shape_bus_routes = gtfs_shape_bus_routes.sort_values(by=["shape_id", "shape_pt_sequence"])
+
+    gtfs_shape_bus_routes["prev_node_id"] = gtfs_shape_bus_routes["shape_model_node_id"].shift(1)
+    
+    # since we are keeping previous node, the first pair in each sequence is nonsence
     gtfs_shape_bus_routes = gtfs_shape_bus_routes[(gtfs_shape_bus_routes["shape_pt_sequence"] != 1)]
-    gtfs_shape_bus_routes = gtfs_shape_bus_routes.drop_duplicates(subset=["shape_model_node_id", "next_node_id"])
+    gtfs_shape_bus_routes = gtfs_shape_bus_routes.drop_duplicates(subset=["shape_model_node_id", "prev_node_id"])
     gtfs_shape_bus_routes["has_bus_on_link"] = True
     gtfs_shape_bus_routes["shape_model_node_id"] = pd.to_numeric(gtfs_shape_bus_routes["shape_model_node_id"])
-    gtfs_shape_bus_routes["next_node_id"] = pd.to_numeric(gtfs_shape_bus_routes["next_node_id"])
+    gtfs_shape_bus_routes["prev_node_id"] = pd.to_numeric(gtfs_shape_bus_routes["prev_node_id"])
 
-    links_df = pd.merge(links_df, gtfs_shape_bus_routes[["shape_model_node_id", "next_node_id", "has_bus_on_link"]], 
+    # We direction is important, if its not, there would need ot be a second merge
+    links_df = pd.merge(links_df, gtfs_shape_bus_routes[["shape_model_node_id", "prev_node_id", "has_bus_on_link"]], 
         left_on=["A", "B"],
-        right_on=["shape_model_node_id", "next_node_id"],
+        right_on=[ "prev_node_id", "shape_model_node_id"],
         how="left"
-    ).drop(columns=["shape_model_node_id", "next_node_id"])
+    ).drop(columns=["shape_model_node_id", "prev_node_id"])
     links_df["has_bus_on_link"] = links_df["has_bus_on_link"].fillna(False)
 
     return links_df
 
+    #%%
 def find_parent_ranch_dir(ranch_file_path: Union[Path, str]):
     """
     In Case __init__ file moves ect, we will take any file in the ranch directory and return the parent ranch dir
