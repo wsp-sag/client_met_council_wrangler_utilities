@@ -388,15 +388,19 @@ def prepare_table_for_drive_network(
             ~(links_df.B.isin(parameters.taz_N_list)) &
             ( # ft <= 7 should be kept in the nework
                 (
-                    (links_df.drive_access == 1) & 
-                    (links_df.ft <= maximum_ft)
+                    (links_df.ft <= maximum_ft) &
+                    (links_df.drive_access == 1) 
                 ) |
                 ( # is a tollsegment, should be kept within the network
                     (links_df.tollseg != 0) |
                     (links_df.tollbooth != 0)
                 ) 
             )
-        ) | links_df["has_bus_on_link"] | links_df["managed_lane_connector"] | (links_df["cntype"] == "MAZ") # Maz is filtered out by links_df.fg <= maximum_ft 
+        ) | (
+            links_df["has_bus_on_link"] | 
+            links_df["managed_lane_connector"] | 
+            ((links_df["cntype"] == "MAZ") & (links_df.drive_access == 1)) # Maz is filtered out by links_df.fg <= maximum_ft 
+        )
     ].copy()
 
     if not regenerate_connectors:
