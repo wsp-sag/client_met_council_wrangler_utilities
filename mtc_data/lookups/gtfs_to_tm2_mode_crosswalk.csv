@@ -22,8 +22,8 @@ MarinTransit_2015_8_31,Marin Transit,MCTD,39,3,71,Local bus,24,0,Motor Standard 
 Petaluma_2016_5_22,Petaluma Transit,267,21,3,68,Local bus,22,0,Motor Standard Bus
 RioVista_2015_8_20,Rio Vista Delta Breeze,5,13,3,52,Local bus,14,0,Motor Standard Bus
 SFMTA_2015_8_11,San Francisco Municipal Transportation Agency,SFMTA,22,0,110,Light rail,39,0,LRV2
-SFMTA_2015_8_11,San Francisco Municipal Transportation Agency,SFMTA,22,3,20,Local bus,2,0,Motor Standard Bus
-SFMTA_2015_8_11,San Francisco Municipal Transportation Agency,SFMTA,22,5,21,Local bus,3,0,Motor Standard Bus
+SFMTA_2015_8_11,San Francisco Municipal Transportation Agency,SFMTA,22,3,21,Local bus,2,0,Motor Standard Bus
+SFMTA_2015_8_11,San Francisco Municipal Transportation Agency,SFMTA,22,5,20,Cable Car,3,0,Motor Standard Bus
 SF_Bay_Ferry2016_07_01,San Francisco Bay Ferry,SB,25,4,101,Ferry service,36,0,Ferry
 SamTrans_2015_8_20,SamTrans,samtrans-ca-us,6,3,24,Local bus,4,0,Motor Standard Bus
 SamTrans_2015_8_20,SamTrans,samtrans-ca-us,6,3,80,Express bus,25,1,SamTrans Plus Bus
@@ -50,3 +50,4 @@ Wheels_2016_7_13,Wheels Bus,LAVTA,24,3,17,Local bus,7,0,Motor Standard Bus
 commuteDOTorg_GTFSImportExport_20160127_final_mj,Commute.org Shuttle,alliance,17,3,14,Local bus,0,0,Motor Small Bus
 sjrtd_2015_0127,San Joaquin Regional Transit District (RTD),,100,3,96,Local bus,0,0,Motor Standard Bus
 sjrtd_2015_0127,San Joaquin Regional Transit District (RTD),,100,3,97,Express bus,0,1,Motor Standard Bus
+SMART,Sonoma Marin Area Rail Transit,SMART,101,2,135,Commuter rail,101,0,Unknown Train
