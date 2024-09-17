@@ -389,6 +389,11 @@ class Project(object):
             )
             base_roadway_network.split_properties_by_time_period_and_category()
         elif base_roadway_network:
+            if not isinstance(base_roadway_network, ModelRoadwayNetwork):
+                base_roadway_network = ModelRoadwayNetwork.from_RoadwayNetwork(
+                    roadway_network_object=base_roadway_network, 
+                    parameters=parameters
+                )
             base_roadway_network.split_properties_by_time_period_and_category()
         else:
             msg = "No base roadway network."
