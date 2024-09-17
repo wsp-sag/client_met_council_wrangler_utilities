@@ -1153,7 +1153,7 @@ class Project(object):
                 if col == "distance":
                     if (
                         abs(
-                            (change_row[col] - float(base_row[col]))
+                            (float(change_row[col]) - float(base_row[col]))
                             / base_row[col].astype(float)
                         )
                         > 0.01
@@ -1375,6 +1375,7 @@ class Project(object):
                     & set(self.base_roadway_network.links_df.columns)
                 )
                 - set(Project.STATIC_VALUES)
+                - set(["cntype","distance"]) # will be calculated in model network
             )
 
             cols_in_changes_not_in_net = list(
@@ -1389,6 +1390,12 @@ class Project(object):
                     )
                 )
 
+            for c in changeable_col:
+                if c in self.parameters.string_col:
+                    self.base_roadway_network.links_df[c].fillna("", inplace=True)
+                else:
+                    self.base_roadway_network.links_df[c].fillna(0, inplace=True)
+            
             change_link_dict_list = _process_link_changes(link_changes_df, changeable_col)
 
         if len(node_changes_df) != 0:

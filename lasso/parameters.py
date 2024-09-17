@@ -944,10 +944,10 @@ class Parameters:
 
         self.drive_buffer =  6
 
-        #self.network_build_crs = CRS("EPSG:2875")
-        #self.project_card_crs = CRS("EPSG:4326")
-        #self.transformer = pyproj.Transformer.from_crs(
-        #    self.network_build_crs, self.project_card_crs, always_xy=True
-        #)
+        self.network_build_crs = CRS("EPSG:2875")
+        self.project_card_crs = CRS("EPSG:4326")
+        self.transformer = pyproj.Transformer.from_crs(
+           self.network_build_crs, self.project_card_crs, always_xy=True
+        )
 
         self.__dict__.update(kwargs)
