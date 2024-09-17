@@ -1,7 +1,7 @@
 name: bicounty
 channels:
   - conda-forge
-  - defaults
+  - nodefaults
 dependencies:
   - asttokens=2.4.1
   - backcall=0.2.0
