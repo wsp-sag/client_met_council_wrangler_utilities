@@ -495,9 +495,10 @@ class Project(object):
                 .rename("operation_history")
                 .reset_index()
             )
-            action_history_df["operation_final"] = action_history_df.apply(lambda x: Project._final_op(x), axis=1)
-                
+
             link_df = pd.merge(link_df, action_history_df, on=['A', 'B'], how="left")
+            link_df.drop_duplicates(subset=['A', 'B'], keep="last", inplace=True)
+            link_df["operation_final"] = link_df.apply(lambda x: Project._final_op(x), axis=1)
 
         if len(node_df) > 0:
             action_history_df = (
@@ -506,9 +507,10 @@ class Project(object):
                 .rename("operation_history")
                 .reset_index()
             )
-            action_history_df["operation_final"] = action_history_df.apply(lambda x: Project._final_op(x), axis=1)
-                
-            node_df = pd.merge(node_df, action_history_df, on='N', how="left")
+
+            node_df = pd.merge(node_df, action_history_df, on=['N'], how="left")
+            node_df.drop_duplicates(subset=['N'], keep="last", inplace=True)
+            node_df["operation_final"] = node_df.apply(lambda x: Project._final_op(x), axis=1)
 
         WranglerLogger.info(
             "Processed {} Node lines and {} Link lines".format(
@@ -1080,8 +1082,39 @@ class Project(object):
 
             for x in add_col:
                 cube_add_df[x] = cube_add_df[x].astype(self.base_roadway_network.links_df[x].dtype)
+            
+            add_col_final = add_col.copy()
+            # properties that are split by time period and category
+            for c in add_col:
+                if "_" not in c:
+                    continue
+                # WranglerLogger.debug("Processing Column: {}".format(c))
+                (
+                    p_base_name,
+                    p_time_period,
+                    p_category,
+                    managed_lane,
+                ) = column_name_to_parts(c, self.parameters) 
 
-            add_link_properties = cube_add_df[add_col].to_dict("records")
+                if p_base_name not in self.parameters.properties_to_split.keys():
+                    continue
+
+                if (p_base_name in cube_add_df.columns):
+                    if cube_add_df[p_base_name].equals(cube_add_df[c]):
+                        add_col_final.remove(c)
+                        continue
+                    else:
+                        msg = "Detected different changes for split-property variables on regular roadway links: "
+                        msg += "conflicting \"{}\" values \"{}\", \"{}\"".format(p_base_name, cube_add_df[p_base_name], cube_add_df[c])
+                        WranglerLogger.error(msg)
+                        raise ValueError(msg)
+
+                else:
+                    cube_add_df[p_base_name] = cube_add_df[c]
+                    add_col_final.remove(c)
+                    add_col_final.append(p_base_name)
+
+            add_link_properties = cube_add_df[add_col_final].to_dict("records")            
 
             # WranglerLogger.debug("Add Link Properties: {}".format(add_link_properties))
             WranglerLogger.debug("{} Links Added".format(len(add_link_properties)))
