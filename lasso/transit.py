@@ -724,7 +724,7 @@ class CubeTransit(object):
             properties_base.pop(k, None)
 
         difference_dict = dict(
-            set(properties_build.items()) ^ set(properties_base.items())
+            set(properties_build.items()) - set(properties_base.items())
         )
 
         # Iterate through properties list to build difference project card list
