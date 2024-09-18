@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Starting Out &mdash; lasso  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex/" />
+    <link rel="search" title="Search" href="../search/" />
+    <link rel="next" title="Setup" href="../setup/" />
+    <link rel="prev" title="Welcome to lasso’s documentation!" href="../" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../" class="icon icon-home"> lasso
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search/" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Starting Out</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#bleeding-edge">Bleeding Edge</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#from-clone">From Clone</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#brief-intro">Brief Intro</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#components">Components</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#roadwaynetwork">RoadwayNetwork</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#transitnetwork">TransitNetwork</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#projectcard">ProjectCard</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#scenario">Scenario</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#project">Project</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#modelroadwaynetwork">ModelRoadwayNetwork</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#standardtransit">StandardTransit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cubetransit">CubeTransit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#parameters">Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#typical-workflow">Typical Workflow</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#project-cards-from-transit-lin-files">Project Cards from Transit LIN Files</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#project-cards-from-cube-log-files">Project Cards from Cube LOG Files</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#model-network-files-for-a-scenario">Model Network Files for a Scenario</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#running-quickstart-jupyter-notebooks">Running Quickstart Jupyter Notebooks</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../setup/">Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../running/">Running Lasso</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../autodoc/">Lasso Classes and Functions</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../">lasso</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">Starting Out</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/starting.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="starting-out">
+<h1>Starting Out<a class="headerlink" href="#starting-out" title="Permalink to this heading"></a></h1>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this heading"></a></h2>
+<p>If you are managing multiple python versions, we suggest using <a class="reference external" href="https://virtualenv.pypa.io/en/latest/"><code class="docutils literal notranslate"><span class="pre">virtualenv</span></code></a> or <a class="reference external" href="https://conda.io/en/latest/"><code class="docutils literal notranslate"><span class="pre">conda</span></code></a> virtual environments.</p>
+<p>Example using a conda environment (recommended) and using the package manager <a class="reference external" href="https://pip.pypa.io/en/stable/">pip</a> to install Lasso from the source on GitHub.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda config --add channels conda-forge
+conda create <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.7 rtree geopandas -n &lt;my_lasso_environment&gt;
+conda activate &lt;my_lasso_environment&gt;
+pip install git+https://github.com/wsp-sag/Lasso@master
+</pre></div>
+</div>
+<p>Lasso will install <code class="docutils literal notranslate"><span class="pre">network_wrangler</span></code> from the <a class="reference external" href="https://pypi.org/project/network-wrangler/">PyPi</a> repository because it is included in Lasso’s <code class="docutils literal notranslate"><span class="pre">requirements.txt</span></code>.</p>
+<section id="bleeding-edge">
+<h3>Bleeding Edge<a class="headerlink" href="#bleeding-edge" title="Permalink to this heading"></a></h3>
+<p>If you want to install a more up-to-date or development version of network wrangler and lasso , you can do so by installing it from the <code class="docutils literal notranslate"><span class="pre">develop</span></code> branch of</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda config --add channels conda-forge
+conda create <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.7 rtree geopandas -n &lt;my_lasso_environment&gt;
+conda activate &lt;my_lasso_environment&gt;
+pip install git+https://github.com/wsp-sag/network_wrangler@develop
+pip install git+https://github.com/wsp-sag/Lasso@develop
+</pre></div>
+</div>
+</section>
+<section id="from-clone">
+<h3>From Clone<a class="headerlink" href="#from-clone" title="Permalink to this heading"></a></h3>
+<p>If you are going to be working on Lasso locally, you might want to clone it to your local machine and install it from the clone.  The -e will install it in <a class="reference external" href="https://pip.pypa.io/en/stable/reference/pip_install/?highlight=editable#editable-installs">editable mode</a>.</p>
+<p><strong>if you plan to do development on both network wrangler and lasso locally, consider installing network wrangler from a clone as well!</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda config --add channels conda-forge
+conda create <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.7 rtree geopandas osmnx -n &lt;my_lasso_environment&gt;
+conda activate &lt;my_lasso_environment&gt;
+git clone https://github.com/wsp-sag/Lasso
+git clone https://github.com/wsp-sag/network_wrangler
+<span class="nb">cd</span> network_wrangler
+pip install -e .
+<span class="nb">cd</span> ..
+<span class="nb">cd</span> Lasso
+pip install -e .
+</pre></div>
+</div>
+<p>Notes:</p>
+<ol class="simple">
+<li><p>The -e installs it in editable mode.</p></li>
+<li><p>If you are not part of the project team and want to contribute code bxack to the project, please fork before you clone and then add the original repository to your upstream origin list per <a class="reference external" href="https://help.github.com/en/articles/fork-a-repo">these directions on github</a>.</p></li>
+<li><p>if you wanted to install from a specific tag/version number or branch, replace <code class="docutils literal notranslate"><span class="pre">&#64;master</span></code> with <code class="docutils literal notranslate"><span class="pre">&#64;&lt;branchname&gt;</span></code>  or <code class="docutils literal notranslate"><span class="pre">&#64;tag</span></code></p></li>
+<li><p>If you want to make use of frequent developer updates for network wrangler as well, you can also install it from clone by copying the instructions for cloning and installing Lasso for Network Wrangler</p></li>
+</ol>
+<p>If you are going to be doing Lasso development, we also recommend:</p>
+<ul class="simple">
+<li><p>a good IDE such as <a class="reference external" href="http://atom.io">Atom</a>, VS Code, Sublime Text, etc.
+with Python syntax highlighting turned on.</p></li>
+<li><p><a class="reference external" href="https://desktop.github.com/">GitHub Desktop</a> to locally update your clones</p></li>
+</ul>
+</section>
+</section>
+<section id="brief-intro">
+<h2>Brief Intro<a class="headerlink" href="#brief-intro" title="Permalink to this heading"></a></h2>
+<p>Lasso is a ‘wrapper’ around the <a class="reference external" href="http://wsp-sag.github.io/network_wrangler">Network Wrangler</a> utility.</p>
+<p>Both Lasso and NetworkWrangler are built around the following data schemas:</p>
+<ul class="simple">
+<li><p>[<code class="docutils literal notranslate"><span class="pre">roadway</span> <span class="pre">network</span></code>], which is based on a mashup of Open Street Map and <a class="reference external" href="http://sharedstreets.io">Shared Streets</a>.  In Network Wrangler these are read in from three json files reprsenting: links, shapes, and nodes. Data fields that change by time of day or by user category are represented as nested fields such that any field can be defined for an ad-hoc time-of-day span or user category.</p></li>
+<li><p>[<code class="docutils literal notranslate"><span class="pre">transit</span> <span class="pre">network</span></code>], which is based on a frequency-based implementation of the csv-based GTFS; and</p></li>
+<li><p>[<code class="docutils literal notranslate"><span class="pre">project</span> <span class="pre">card</span></code>], which is novel to Network Wrangler and stores information about network changes as a result of projects in yml.</p></li>
+</ul>
+<p>In addition, Lasso utilizes the following data schemas:</p>
+<ul class="simple">
+<li><p>[<code class="docutils literal notranslate"><span class="pre">MetCouncil</span> <span class="pre">Model</span> <span class="pre">Roadway</span> <span class="pre">Network</span> <span class="pre">Schema</span></code>], which adds data fields to the <code class="docutils literal notranslate"><span class="pre">roadway</span> <span class="pre">network</span></code> schema that MetCouncil uses in their travel model including breaking out data fields by time period.</p></li>
+<li><p>[<code class="docutils literal notranslate"><span class="pre">MetCouncil</span> <span class="pre">Model</span> <span class="pre">Transit</span> <span class="pre">Network</span> <span class="pre">Schema</span></code>], which uses the Cube PublicTransport format,  and</p></li>
+<li><p>[<code class="docutils literal notranslate"><span class="pre">Cube</span> <span class="pre">Log</span> <span class="pre">Files</span></code>], which document changes to the roadway network done in the Cube GUI. Lasso translates these to project cards in order to be used by NetworkWrangler.</p></li>
+<li><p>[<code class="docutils literal notranslate"><span class="pre">Cube</span> <span class="pre">public</span> <span class="pre">transport</span> <span class="pre">line</span> <span class="pre">files</span></code>], which define a set of transit lines in the cube software.</p></li>
+</ul>
+<section id="components">
+<h3>Components<a class="headerlink" href="#components" title="Permalink to this heading"></a></h3>
+<p>Network Wrangler has the following atomic parts:</p>
+<ul class="simple">
+<li><p><em>RoadwayNetwork</em> object, which represents the <code class="docutils literal notranslate"><span class="pre">roadway</span> <span class="pre">network</span></code> data as GeoDataFrames;</p></li>
+<li><p><em>TransitNetwork</em> object, which represents the <code class="docutils literal notranslate"><span class="pre">transit</span> <span class="pre">network</span></code> data as DataFrames;</p></li>
+<li><p><em>ProjectCard</em> object, which represents the data of the <code class="docutils literal notranslate"><span class="pre">project</span> <span class="pre">card</span></code>.  Project cards identify the infrastructure that is changing (a selection) and defines the changes; or contains information about a new facility to be constructed or a new service to be run.;</p></li>
+<li><p><em>Scenario</em> object, which consist of at least a RoadwayNetwork, and
+TransitNetwork.  Scenarios can be based on or tiered from other scenarios.
+Scenarios can query and add ProjectCards to describe a set of changes that should be made to the network.</p></li>
+</ul>
+<p>In addition, Lasso has the following atomic parts:</p>
+<ul class="simple">
+<li><p><em>Project</em> object, creates project cards from one of the following: a base and a build transit network in cube format, a base and build highway network, or a base highway network and a Cube log file.</p></li>
+<li><p><em>ModelRoadwayNetwork</em> object is a subclass of <code class="docutils literal notranslate"><span class="pre">RoadwayNetwork</span></code> and contains MetCouncil-specific methods to define and create MetCouncil-specific variables and export the network to a format that can be read by Cube.</p></li>
+<li><p><em>StandardTransit</em>, an object for holding a standard transit feed as a Partridge object and contains
+methods to manipulate and translate the GTFS data to MetCouncil’s Cube Line files.</p></li>
+<li><p><em>CubeTransit</em>, an object for storing information about transit defined in <code class="docutils literal notranslate"><span class="pre">Cube</span> <span class="pre">public</span> <span class="pre">transport</span> <span class="pre">line</span> <span class="pre">files</span></code>
+. Has the capability to parse cube line file properties and shapes into python dictionaries and compare line files and represent changes as Project Card dictionaries.</p></li>
+<li><p><em>Parameters</em>, A class representing all the parameters defining the networks
+including time of day, categories, etc. Parameters can be set at runtime by initializing a parameters instance
+with a keyword argument setting the attribute.  Parameters that are
+not explicitly set will use default parameters listed in this class.</p></li>
+</ul>
+<section id="roadwaynetwork">
+<h4>RoadwayNetwork<a class="headerlink" href="#roadwaynetwork" title="Permalink to this heading"></a></h4>
+<p>Reads, writes, queries and and manipulates roadway network data, which
+is mainly stored in the GeoDataFrames <code class="docutils literal notranslate"><span class="pre">links_df</span></code>, <code class="docutils literal notranslate"><span class="pre">nodes_df</span></code>, and <code class="docutils literal notranslate"><span class="pre">shapes_df</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">net</span> <span class="o">=</span> <span class="n">RoadwayNetwork</span><span class="o">.</span><span class="n">read</span><span class="p">(</span>
+        <span class="n">link_filename</span><span class="o">=</span><span class="n">MY_LINK_FILE</span><span class="p">,</span>
+        <span class="n">node_filename</span><span class="o">=</span><span class="n">MY_NODE_FILE</span><span class="p">,</span>
+        <span class="n">shape_filename</span><span class="o">=</span><span class="n">MY_SHAPE_FILE</span><span class="p">,</span>
+        <span class="n">shape_foreign_key</span> <span class="o">=</span><span class="s1">&#39;shape_id&#39;</span><span class="p">,</span>
+        
+    <span class="p">)</span>
+<span class="n">my_selection</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;link&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;I 35E&quot;</span><span class="p">]}],</span>
+    <span class="s2">&quot;A&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;osm_node_id&quot;</span><span class="p">:</span> <span class="s2">&quot;961117623&quot;</span><span class="p">},</span>  <span class="c1"># start searching for segments at A</span>
+    <span class="s2">&quot;B&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;osm_node_id&quot;</span><span class="p">:</span> <span class="s2">&quot;2564047368&quot;</span><span class="p">},</span>
+<span class="p">}</span>
+<span class="n">net</span><span class="o">.</span><span class="n">select_roadway_features</span><span class="p">(</span><span class="n">my_selection</span><span class="p">)</span>
+
+<span class="n">my_change</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span>
+        <span class="s1">&#39;property&#39;</span><span class="p">:</span> <span class="s1">&#39;lanes&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;existing&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s1">&#39;set&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+     <span class="p">},</span>
+     <span class="p">{</span>
+        <span class="s1">&#39;property&#39;</span><span class="p">:</span> <span class="s1">&#39;drive_access&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;set&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+      <span class="p">},</span>
+<span class="p">]</span>
+
+<span class="n">my_net</span><span class="o">.</span><span class="n">apply_roadway_feature_change</span><span class="p">(</span>
+    <span class="n">my_net</span><span class="o">.</span><span class="n">select_roadway_features</span><span class="p">(</span><span class="n">my_selection</span><span class="p">),</span>
+    <span class="n">my_change</span>
+<span class="p">)</span>
+
+<span class="n">ml_net</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">create_managed_lane_network</span><span class="p">(</span><span class="n">in_place</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="n">ml_net</span><span class="o">.</span><span class="n">is_network_connected</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;drive&quot;</span><span class="p">))</span>
+
+<span class="n">_</span><span class="p">,</span> <span class="n">disconnected_nodes</span> <span class="o">=</span> <span class="n">ml_net</span><span class="o">.</span><span class="n">assess_connectivity</span><span class="p">(</span>
+  <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;walk&quot;</span><span class="p">,</span>
+  <span class="n">ignore_end_nodes</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+<span class="n">ml_net</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">my_out_prefix</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">my_dir</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="transitnetwork">
+<h4>TransitNetwork<a class="headerlink" href="#transitnetwork" title="Permalink to this heading"></a></h4>
+</section>
+<section id="projectcard">
+<h4>ProjectCard<a class="headerlink" href="#projectcard" title="Permalink to this heading"></a></h4>
+</section>
+<section id="scenario">
+<h4>Scenario<a class="headerlink" href="#scenario" title="Permalink to this heading"></a></h4>
+<p>Manages sets of project cards and tiering from a base scenario/set of networks.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
+<span class="n">my_base_scenario</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;road_net&quot;</span><span class="p">:</span> <span class="n">RoadwayNetwork</span><span class="o">.</span><span class="n">read</span><span class="p">(</span>
+        <span class="n">link_filename</span><span class="o">=</span><span class="n">STPAUL_LINK_FILE</span><span class="p">,</span>
+        <span class="n">node_filename</span><span class="o">=</span><span class="n">STPAUL_NODE_FILE</span><span class="p">,</span>
+        <span class="n">shape_filename</span><span class="o">=</span><span class="n">STPAUL_SHAPE_FILE</span><span class="p">,</span>
+        <span class="n">fast</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">shape_foreign_key</span> <span class="o">=</span><span class="s1">&#39;shape_id&#39;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="s2">&quot;transit_net&quot;</span><span class="p">:</span> <span class="n">TransitNetwork</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">STPAUL_DIR</span><span class="p">),</span>
+<span class="p">}</span>
+
+<span class="n">card_filenames</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;3_multiple_roadway_attribute_change.yml&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;multiple_changes.yml&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;4_simple_managed_lane.yml&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">project_card_directory</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">STPAUL_DIR</span><span class="p">,</span> <span class="s2">&quot;project_cards&quot;</span><span class="p">)</span>
+
+<span class="n">project_cards_list</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">ProjectCard</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_card_directory</span><span class="p">,</span> <span class="n">filename</span><span class="p">),</span> <span class="n">validate</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">card_filenames</span>
+<span class="p">]</span>
+
+<span class="n">my_scenario</span> <span class="o">=</span> <span class="n">Scenario</span><span class="o">.</span><span class="n">create_scenario</span><span class="p">(</span>
+  <span class="n">base_scenario</span><span class="o">=</span><span class="n">my_base_scenario</span><span class="p">,</span>
+  <span class="n">project_cards_list</span><span class="o">=</span><span class="n">project_cards_list</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">my_scenario</span><span class="o">.</span><span class="n">check_scenario_requisites</span><span class="p">()</span>
+
+<span class="n">my_scenario</span><span class="o">.</span><span class="n">apply_all_projects</span><span class="p">()</span>
+
+<span class="n">my_scenario</span><span class="o">.</span><span class="n">scenario_summary</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="project">
+<h4>Project<a class="headerlink" href="#project" title="Permalink to this heading"></a></h4>
+<p>Creates project cards by comparing two MetCouncil Model Transit Network files or by reading a cube log file and a base network;</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
+<span class="n">test_project</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">create_project</span><span class="p">(</span>
+  <span class="n">base_transit_source</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">CUBE_DIR</span><span class="p">,</span> <span class="s2">&quot;transit.LIN&quot;</span><span class="p">),</span>
+  <span class="n">build_transit_source</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">CUBE_DIR</span><span class="p">,</span> <span class="s2">&quot;transit_route_shape_change&quot;</span><span class="p">),</span>
+  <span class="p">)</span>
+
+<span class="n">test_project</span><span class="o">.</span><span class="n">evaluate_changes</span><span class="p">()</span>
+
+<span class="n">test_project</span><span class="o">.</span><span class="n">write_project_card</span><span class="p">(</span>
+  <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SCRATCH_DIR</span><span class="p">,</span> <span class="s2">&quot;t_transit_shape_test.yml&quot;</span><span class="p">)</span>
+  <span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="modelroadwaynetwork">
+<h4>ModelRoadwayNetwork<a class="headerlink" href="#modelroadwaynetwork" title="Permalink to this heading"></a></h4>
+<p>A subclass of network_wrangler’s RoadwayNetwork
+class which additional understanding about how to translate and write the
+network out to the MetCouncil Roadway Network schema.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">net</span> <span class="o">=</span> <span class="n">ModelRoadwayNetwork</span><span class="o">.</span><span class="n">read</span><span class="p">(</span>
+      <span class="n">link_filename</span><span class="o">=</span><span class="n">STPAUL_LINK_FILE</span><span class="p">,</span>
+      <span class="n">node_filename</span><span class="o">=</span><span class="n">STPAUL_NODE_FILE</span><span class="p">,</span>
+      <span class="n">shape_filename</span><span class="o">=</span><span class="n">STPAUL_SHAPE_FILE</span><span class="p">,</span>
+      <span class="n">fast</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+      <span class="n">shape_foreign_key</span> <span class="o">=</span><span class="s1">&#39;shape_id&#39;</span><span class="p">,</span>
+  <span class="p">)</span>
+
+<span class="n">net</span><span class="o">.</span><span class="n">write_roadway_as_fixedwidth</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="standardtransit">
+<h4>StandardTransit<a class="headerlink" href="#standardtransit" title="Permalink to this heading"></a></h4>
+<p>Translates the standard GTFS data to MetCouncil’s Cube Line files.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">cube_transit_net</span> <span class="o">=</span> <span class="n">StandardTransit</span><span class="o">.</span><span class="n">read_gtfs</span><span class="p">(</span><span class="n">BASE_TRANSIT_DIR</span><span class="p">)</span>
+<span class="n">cube_transit_net</span><span class="o">.</span><span class="n">write_as_cube_lin</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">WRITE_DIR</span><span class="p">,</span> <span class="s2">&quot;outfile.lin&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</section>
+<section id="cubetransit">
+<h4>CubeTransit<a class="headerlink" href="#cubetransit" title="Permalink to this heading"></a></h4>
+<p>Used by the project class and has the capability to:</p>
+<ul class="simple">
+<li><p>Parse cube line file properties and shapes into python dictionaries</p></li>
+<li><p>Compare line files and represent changes as Project Card dictionaries</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tn</span> <span class="o">=</span> <span class="n">CubeTransit</span><span class="o">.</span><span class="n">create_from_cube</span><span class="p">(</span><span class="n">CUBE_DIR</span><span class="p">)</span>
+<span class="n">transit_change_list</span> <span class="o">=</span> <span class="n">tn</span><span class="o">.</span><span class="n">evaluate_differences</span><span class="p">(</span><span class="n">base_transit_network</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="parameters">
+<h4>Parameters<a class="headerlink" href="#parameters" title="Permalink to this heading"></a></h4>
+<p>Holds information about default parameters but can
+also be initialized to override those parameters at object instantiation using a dictionary.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># read parameters from a yaml configuration  file</span>
+<span class="c1"># could also provide as a key/value pair</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+      <span class="n">my_config</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+<span class="c1"># provide parameters at instantiation of ModelRoadwayNetwork</span>
+<span class="n">model_road_net</span> <span class="o">=</span> <span class="n">ModelRoadwayNetwork</span><span class="o">.</span><span class="n">from_RoadwayNetwork</span><span class="p">(</span>
+            <span class="n">my_scenario</span><span class="o">.</span><span class="n">road_net</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="n">my_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;my_parameters&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="p">)</span>
+<span class="c1"># network written with direction from the parameters given</span>
+<span class="n">model_road_net</span><span class="o">.</span><span class="n">write_roadway_as_shp</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="typical-workflow">
+<h3>Typical Workflow<a class="headerlink" href="#typical-workflow" title="Permalink to this heading"></a></h3>
+<p>Workflows in Lasso and Network Wrangler typically accomplish one of two goals:</p>
+<ol class="simple">
+<li><p>Create Project Cards to document network changes as a result of either transit or roadway projects.</p></li>
+<li><p>Create Model Network Files for a scenario as represented by a series of Project Cards layered on top of a base network.</p></li>
+</ol>
+<section id="project-cards-from-transit-lin-files">
+<h4>Project Cards from Transit LIN Files<a class="headerlink" href="#project-cards-from-transit-lin-files" title="Permalink to this heading"></a></h4>
+</section>
+<section id="project-cards-from-cube-log-files">
+<h4>Project Cards from Cube LOG Files<a class="headerlink" href="#project-cards-from-cube-log-files" title="Permalink to this heading"></a></h4>
+</section>
+<section id="model-network-files-for-a-scenario">
+<h4>Model Network Files for a Scenario<a class="headerlink" href="#model-network-files-for-a-scenario" title="Permalink to this heading"></a></h4>
+</section>
+</section>
+</section>
+<section id="running-quickstart-jupyter-notebooks">
+<h2>Running Quickstart Jupyter Notebooks<a class="headerlink" href="#running-quickstart-jupyter-notebooks" title="Permalink to this heading"></a></h2>
+<p>To learn basic lasso functionality, please refer to the following jupyter notebooks in the <code class="docutils literal notranslate"><span class="pre">/notebooks</span></code> directory:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Lasso</span> <span class="pre">Project</span> <span class="pre">Card</span> <span class="pre">Creation</span> <span class="pre">Quickstart.ipynb</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Lasso</span> <span class="pre">Scenario</span> <span class="pre">Creation</span> <span class="pre">Quickstart.ipynb</span></code></p></li>
+</ul>
+<p>Jupyter notebooks can be started by activating the lasso conda environment and typing <code class="docutils literal notranslate"><span class="pre">jupyter</span> <span class="pre">notebook</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda activate &lt;my_lasso_environment&gt;
+jupyter notebook
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../" class="btn btn-neutral float-left" title="Welcome to lasso’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../setup/" class="btn btn-neutral float-right" title="Setup" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2019-2022 Metropolitan Council, Metropolitan Transportation Commission.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

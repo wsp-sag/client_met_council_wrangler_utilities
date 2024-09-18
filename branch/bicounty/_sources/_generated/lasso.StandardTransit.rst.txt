@@ -1,0 +1,32 @@
+﻿lasso.StandardTransit
+=====================
+
+.. currentmodule:: lasso
+
+.. autoclass:: StandardTransit
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~StandardTransit.__init__
+      ~StandardTransit.calculate_cube_mode
+      ~StandardTransit.cube_format
+      ~StandardTransit.evaluate_differences
+      ~StandardTransit.fromTransitNetwork
+      ~StandardTransit.read_gtfs
+      ~StandardTransit.route_properties_gtfs_to_cube
+      ~StandardTransit.shape_gtfs_to_cube
+      ~StandardTransit.shape_gtfs_to_emme
+      ~StandardTransit.time_to_cube_time_period
+      ~StandardTransit.write_as_cube_lin
+   
+   
+
+   
+   
+   

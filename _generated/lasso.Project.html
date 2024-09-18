@@ -1,0 +1,525 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>lasso.Project &mdash; lasso  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="lasso.Parameters" href="lasso.Parameters.html" />
+    <link rel="prev" title="lasso.ModelRoadwayNetwork" href="lasso.ModelRoadwayNetwork.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> lasso
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../starting.html">Starting Out</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../setup.html">Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../running.html">Running Lasso</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../autodoc.html">Lasso Classes and Functions</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../autodoc.html#base-classes">Base Classes</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="lasso.CubeTransit.html">lasso.CubeTransit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lasso.StandardTransit.html">lasso.StandardTransit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lasso.ModelRoadwayNetwork.html">lasso.ModelRoadwayNetwork</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">lasso.Project</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lasso.Parameters.html">lasso.Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../autodoc.html#utils-and-functions">Utils and Functions</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">lasso</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../autodoc.html">Lasso Classes and Functions</a> &raquo;</li>
+        
+      <li>lasso.Project</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/_generated/lasso.Project.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="lasso-project">
+<h1>lasso.Project<a class="headerlink" href="#lasso-project" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="lasso.Project">
+<em class="property">class </em><code class="sig-prename descclassname">lasso.</code><code class="sig-name descname">Project</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">roadway_changes</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">transit_changes</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">base_roadway_network</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">base_transit_network</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">build_transit_network</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">project_name</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">evaluate</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">parameters</span><span class="o">=</span><span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lasso/project.html#Project"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lasso.Project" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A single or set of changes to the roadway or transit system.</p>
+<p>Compares a base and a build transit network or a base and build
+highway network and produces project cards.</p>
+<p>Typical usage example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">test_project</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">create_project</span><span class="p">(</span>
+    <span class="n">base_transit_source</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">CUBE_DIR</span><span class="p">,</span> <span class="s2">&quot;transit.LIN&quot;</span><span class="p">),</span>
+    <span class="n">build_transit_source</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">CUBE_DIR</span><span class="p">,</span> <span class="s2">&quot;transit_route_shape_change&quot;</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="n">test_project</span><span class="o">.</span><span class="n">evaluate_changes</span><span class="p">()</span>
+<span class="n">test_project</span><span class="o">.</span><span class="n">write_project_card</span><span class="p">(</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SCRATCH_DIR</span><span class="p">,</span> <span class="s2">&quot;t_transit_shape_test.yml&quot;</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt id="lasso.Project.DEFAULT_PROJECT_NAME">
+<code class="sig-name descname">DEFAULT_PROJECT_NAME</code><a class="headerlink" href="#lasso.Project.DEFAULT_PROJECT_NAME" title="Permalink to this definition">¶</a></dt>
+<dd><p>a class-level constant that defines what
+the project name will be if none is set.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="lasso.Project.STATIC_VALUES">
+<code class="sig-name descname">STATIC_VALUES</code><a class="headerlink" href="#lasso.Project.STATIC_VALUES" title="Permalink to this definition">¶</a></dt>
+<dd><p>a class-level constant which defines values that
+are not evaluated when assessing changes.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="lasso.Project.card_data">
+<code class="sig-name descname">card_data</code><a class="headerlink" href="#lasso.Project.card_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>{“project”: &lt;project_name&gt;, “changes”: &lt;list of change dicts&gt;}</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="lasso.Project.roadway_changes">
+<code class="sig-name descname">roadway_changes</code><a class="headerlink" href="#lasso.Project.roadway_changes" title="Permalink to this definition">¶</a></dt>
+<dd><p>pandas dataframe of CUBE roadway changes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="lasso.Project.transit_changes">
+<code class="sig-name descname">transit_changes</code><a class="headerlink" href="#lasso.Project.transit_changes" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="lasso.CubeTransit.html#lasso.CubeTransit" title="lasso.CubeTransit">CubeTransit</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="lasso.Project.base_roadway_network">
+<code class="sig-name descname">base_roadway_network</code><a class="headerlink" href="#lasso.Project.base_roadway_network" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>RoadwayNetwork</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="lasso.Project.base_transit_network">
+<code class="sig-name descname">base_transit_network</code><a class="headerlink" href="#lasso.Project.base_transit_network" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="lasso.CubeTransit.html#lasso.CubeTransit" title="lasso.CubeTransit">CubeTransit</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="lasso.Project.build_transit_network">
+<code class="sig-name descname">build_transit_network</code><a class="headerlink" href="#lasso.Project.build_transit_network" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="lasso.CubeTransit.html#lasso.CubeTransit" title="lasso.CubeTransit">CubeTransit</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="lasso.Project.project_name">
+<code class="sig-name descname">project_name</code><a class="headerlink" href="#lasso.Project.project_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>name of the project, set to DEFAULT_PROJECT_NAME if not provided</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="lasso.Project.parameters">
+<code class="sig-name descname">parameters</code><a class="headerlink" href="#lasso.Project.parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>an  instance of the Parameters class which sets a bunch of parameters</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lasso.Project.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">roadway_changes</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">transit_changes</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">base_roadway_network</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">base_transit_network</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">build_transit_network</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">project_name</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">evaluate</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">parameters</span><span class="o">=</span><span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lasso/project.html#Project.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lasso.Project.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>ProjectCard constructor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>roadway_changes</strong> – dataframe of roadway changes read from a log file</p></li>
+<li><p><strong>transit_changes</strong> – </p></li>
+<li><p><strong>base_roadway_network</strong> – RoadwayNetwork instance for base case</p></li>
+<li><p><strong>base_transit_network</strong> – CubeTransit instance for base transit network</p></li>
+<li><p><strong>build_transit_network</strong> – CubeTransit instance for build transit network</p></li>
+<li><p><strong>project_name</strong> – name of the project</p></li>
+<li><p><strong>evaluate</strong> – defaults to false, but if true, will create card data</p></li>
+<li><p><strong>parameters</strong> – dictionary of parameter settings (see Parameters class) or an instance of Parameters. If not specified, will use default parameters.</p></li>
+</ul>
+</dd>
+</dl>
+<p>returns: instance of ProjectCard</p>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#lasso.Project.__init__" title="lasso.Project.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>([roadway_changes, transit_changes, …])</p></td>
+<td><p>ProjectCard constructor.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#lasso.Project.add_highway_changes" title="lasso.Project.add_highway_changes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_highway_changes</span></code></a>([…])</p></td>
+<td><p>Evaluates changes from the log file based on the base highway object and adds entries into the self.card_data dictionary.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#lasso.Project.add_transit_changes" title="lasso.Project.add_transit_changes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_transit_changes</span></code></a>()</p></td>
+<td><p>Evaluates changes between base and build transit objects and adds entries into the self.card_data dictionary.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#lasso.Project.create_project" title="lasso.Project.create_project"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_project</span></code></a>([roadway_log_file, …])</p></td>
+<td><p>Constructor for a Project instance.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#lasso.Project.determine_roadway_network_changes_compatability" title="lasso.Project.determine_roadway_network_changes_compatability"><code class="xref py py-obj docutils literal notranslate"><span class="pre">determine_roadway_network_changes_compatability</span></code></a>(…)</p></td>
+<td><p>Checks to see that any links or nodes that change exist in base roadway network.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#lasso.Project.evaluate_changes" title="lasso.Project.evaluate_changes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate_changes</span></code></a>()</p></td>
+<td><p>Determines which changes should be evaluated, initiates self.card_data to be an aggregation of transit and highway changes.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#lasso.Project.read_logfile" title="lasso.Project.read_logfile"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_logfile</span></code></a>(logfilename)</p></td>
+<td><p>Reads a Cube log file and returns a dataframe of roadway_changes</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#lasso.Project.write_project_card" title="lasso.Project.write_project_card"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_project_card</span></code></a>([filename])</p></td>
+<td><p>Writes project cards.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#lasso.Project.CALCULATED_VALUES" title="lasso.Project.CALCULATED_VALUES"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CALCULATED_VALUES</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#id0" title="lasso.Project.DEFAULT_PROJECT_NAME"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DEFAULT_PROJECT_NAME</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#id1" title="lasso.Project.STATIC_VALUES"><code class="xref py py-obj docutils literal notranslate"><span class="pre">STATIC_VALUES</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt id="lasso.Project.add_highway_changes">
+<code class="sig-name descname">add_highway_changes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">limit_variables_to_existing_network</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lasso/project.html#Project.add_highway_changes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lasso.Project.add_highway_changes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluates changes from the log file based on the base highway object and
+adds entries into the self.card_data dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>limit_variables_to_existing_network</strong> (<em>bool</em>) – True if no ad-hoc variables.  Default to False.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lasso.Project.add_transit_changes">
+<code class="sig-name descname">add_transit_changes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lasso/project.html#Project.add_transit_changes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lasso.Project.add_transit_changes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluates changes between base and build transit objects and
+adds entries into the self.card_data dictionary.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lasso.Project.create_project">
+<em class="property">static </em><code class="sig-name descname">create_project</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">roadway_log_file</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">roadway_shp_file</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">roadway_csv_file</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">base_roadway_dir</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">base_transit_source</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">build_transit_source</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">roadway_changes</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">transit_changes</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">base_roadway_network</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">base_transit_network</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">build_transit_network</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">project_name</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">recalculate_calculated_variables</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">recalculate_distance</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">parameters</span><span class="o">=</span><span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lasso/project.html#Project.create_project"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lasso.Project.create_project" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructor for a Project instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>roadway_log_file</strong> – File path to consuming logfile or a list of logfile paths.</p></li>
+<li><p><strong>roadway_shp_file</strong> – File path to consuming shape file for roadway changes.</p></li>
+<li><p><strong>roadway_csv_file</strong> – File path to consuming csv file for roadway changes.</p></li>
+<li><p><strong>base_roadway_dir</strong> – Folder path to base roadway network.</p></li>
+<li><p><strong>base_transit_source</strong> – Folder path to base transit network or cube line file string.</p></li>
+<li><p><strong>base_transit_file</strong> – File path to base transit network.</p></li>
+<li><p><strong>build_transit_source</strong> – Folder path to build transit network or cube line file string.</p></li>
+<li><p><strong>build_transit_file</strong> – File path to build transit network.</p></li>
+<li><p><strong>roadway_changes</strong> – pandas dataframe of CUBE roadway changes.</p></li>
+<li><p><strong>transit_changes</strong> – build transit changes.</p></li>
+<li><p><strong>base_roadway_network</strong> – Base roadway network object.</p></li>
+<li><p><strong>base_transit_network</strong> – Base transit network object.</p></li>
+<li><p><strong>build_transit_network</strong> – Build transit network object.</p></li>
+<li><p><strong>project_name</strong> – If not provided, will default to the roadway_log_file filename if provided (or the first filename if a list is provided)</p></li>
+<li><p><strong>recalculate_calculated_variables</strong> – if reading in a base network, if this is true it will recalculate variables such as area type, etc. This only needs to be true if you are creating project cards that are changing the calculated variables.</p></li>
+<li><p><strong>recalculate_distance</strong> – recalculate the distance variable. This only needs to be true if you are creating project cards that change the distance.</p></li>
+<li><p><strong>parameters</strong> – dictionary of parameters</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A Project instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lasso.Project.determine_roadway_network_changes_compatability">
+<em class="property">static </em><code class="sig-name descname">determine_roadway_network_changes_compatability</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">base_roadway_network</span></em>, <em class="sig-param"><span class="n">roadway_changes</span></em>, <em class="sig-param"><span class="n">parameters</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lasso/project.html#Project.determine_roadway_network_changes_compatability"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lasso.Project.determine_roadway_network_changes_compatability" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks to see that any links or nodes that change exist in base roadway network.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lasso.Project.evaluate_changes">
+<code class="sig-name descname">evaluate_changes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lasso/project.html#Project.evaluate_changes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lasso.Project.evaluate_changes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines which changes should be evaluated, initiates
+self.card_data to be an aggregation of transit and highway changes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lasso.Project.read_logfile">
+<em class="property">static </em><code class="sig-name descname">read_logfile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">logfilename</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lasso/project.html#Project.read_logfile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lasso.Project.read_logfile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads a Cube log file and returns a dataframe of roadway_changes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>logfilename</strong> (<em>str</em><em> or </em><em>list</em><em>[</em><em>str</em><em>]</em>) – File path to CUBE logfile or list of logfile paths.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A DataFrame reprsentation of the log file.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lasso.Project.write_project_card">
+<code class="sig-name descname">write_project_card</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lasso/project.html#Project.write_project_card"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lasso.Project.write_project_card" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes project cards.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>str</em>) – File path to output .yml</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="lasso.Project.CALCULATED_VALUES">
+<code class="sig-name descname">CALCULATED_VALUES</code><em class="property"> = ['area_type', 'county', 'assign_group', 'centroidconnect']</em><a class="headerlink" href="#lasso.Project.CALCULATED_VALUES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="id0">
+<code class="sig-name descname">DEFAULT_PROJECT_NAME</code><em class="property"> = 'USER TO define'</em><a class="headerlink" href="#id0" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="id1">
+<code class="sig-name descname">STATIC_VALUES</code><em class="property"> = ['model_link_id', 'area_type', 'county', 'centroidconnect']</em><a class="headerlink" href="#id1" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="lasso.Parameters.html" class="btn btn-neutral float-right" title="lasso.Parameters" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="lasso.ModelRoadwayNetwork.html" class="btn btn-neutral float-left" title="lasso.ModelRoadwayNetwork" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2019 Metropolitan Council
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

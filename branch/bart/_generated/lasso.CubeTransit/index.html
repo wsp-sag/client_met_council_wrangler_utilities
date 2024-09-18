@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>lasso.CubeTransit &mdash; lasso  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex/" />
+    <link rel="search" title="Search" href="../../search/" />
+    <link rel="next" title="lasso.StandardTransit" href="../lasso.StandardTransit/" />
+    <link rel="prev" title="Lasso Classes and Functions" href="../../autodoc/" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../" class="icon icon-home"> lasso
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search/" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../starting/">Starting Out</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../setup/">Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../running/">Running Lasso</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../autodoc/">Lasso Classes and Functions</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../autodoc/#base-classes">Base Classes</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">lasso.CubeTransit</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#lasso.CubeTransit"><code class="docutils literal notranslate"><span class="pre">CubeTransit</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../lasso.StandardTransit/">lasso.StandardTransit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../lasso.ModelRoadwayNetwork/">lasso.ModelRoadwayNetwork</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../lasso.Project/">lasso.Project</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../lasso.Parameters/">lasso.Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../autodoc/#utils-and-functions">Utils and Functions</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../">lasso</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../../autodoc/">Lasso Classes and Functions</a></li>
+      <li class="breadcrumb-item active">lasso.CubeTransit</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/_generated/lasso.CubeTransit.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="lasso-cubetransit">
+<h1>lasso.CubeTransit<a class="headerlink" href="#lasso-cubetransit" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="lasso.CubeTransit">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lasso.</span></span><span class="sig-name descname"><span class="pre">CubeTransit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lasso/transit/#CubeTransit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lasso.CubeTransit" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class for storing information about transit defined in Cube line
+files.</p>
+<p>Has the capability to:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Parse cube line file properties and shapes into python dictionaries</p></li>
+<li><p>Compare line files and represent changes as Project Card dictionaries</p></li>
+</ul>
+</div></blockquote>
+<p>Typical usage example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tn</span> <span class="o">=</span> <span class="n">CubeTransit</span><span class="o">.</span><span class="n">create_from_cube</span><span class="p">(</span><span class="n">CUBE_DIR</span><span class="p">)</span>
+<span class="n">transit_change_list</span> <span class="o">=</span> <span class="n">tn</span><span class="o">.</span><span class="n">evaluate_differences</span><span class="p">(</span><span class="n">base_transit_network</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lasso.CubeTransit.lines">
+<span class="sig-name descname"><span class="pre">lines</span></span><a class="headerlink" href="#lasso.CubeTransit.lines" title="Permalink to this definition"></a></dt>
+<dd><p>list of strings representing unique line names in
+the cube network.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lasso.CubeTransit.line_properties">
+<span class="sig-name descname"><span class="pre">line_properties</span></span><a class="headerlink" href="#lasso.CubeTransit.line_properties" title="Permalink to this definition"></a></dt>
+<dd><p>dictionary of line properties keyed by line name. Property
+values are stored in a dictionary by property name. These
+properties are directly read from the cube line files and haven’t
+been translated to standard transit values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lasso.CubeTransit.shapes">
+<span class="sig-name descname"><span class="pre">shapes</span></span><a class="headerlink" href="#lasso.CubeTransit.shapes" title="Permalink to this definition"></a></dt>
+<dd><p>dictionary of shapes
+keyed by line name. Shapes stored as a pandas DataFrame of nodes with following columns:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>‘node_id’ (int): positive integer of node id</p></li>
+<li><p>‘node’ (int): node number, with negative indicating a non-stop</p></li>
+<li><p>‘stop’ (boolean): indicates if it is a stop</p></li>
+<li><p>‘order’ (int):  order within this shape</p></li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lasso.CubeTransit.program_type">
+<span class="sig-name descname"><span class="pre">program_type</span></span><a class="headerlink" href="#lasso.CubeTransit.program_type" title="Permalink to this definition"></a></dt>
+<dd><p>Either PT or TRNBLD</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lasso.CubeTransit.parameters">
+<span class="sig-name descname"><span class="pre">parameters</span></span><a class="headerlink" href="#lasso.CubeTransit.parameters" title="Permalink to this definition"></a></dt>
+<dd><p>Parameters instance that will be applied to this instance which
+includes information about time periods and variables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="../lasso.Parameters/#lasso.Parameters" title="lasso.Parameters">Parameters</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lasso.CubeTransit.source_list">
+<span class="sig-name descname"><span class="pre">source_list</span></span><a class="headerlink" href="#lasso.CubeTransit.source_list" title="Permalink to this definition"></a></dt>
+<dd><p>List of cube line file sources that have been read and added.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lasso.CubeTransit.diff_dict">
+<span class="sig-name descname"><span class="pre">diff_dict</span></span><a class="headerlink" href="#lasso.CubeTransit.diff_dict" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lasso.CubeTransit.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lasso/transit/#CubeTransit.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lasso.CubeTransit.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Constructor  for CubeTransit</p>
+<p>parameters: dictionary of parameter settings (see Parameters class) or an instance of Parameters</p>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#lasso.CubeTransit.__init__" title="lasso.CubeTransit.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>([parameters])</p></td>
+<td><p>Constructor  for CubeTransit</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#lasso.CubeTransit.add_additional_time_periods" title="lasso.CubeTransit.add_additional_time_periods"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_additional_time_periods</span></code></a>(...)</p></td>
+<td><p>Copies a route to another cube time period with appropriate values for time-period-specific properties.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#lasso.CubeTransit.add_cube" title="lasso.CubeTransit.add_cube"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_cube</span></code></a>(transit_source)</p></td>
+<td><p>Reads a .lin file and adds it to existing TransitNetwork instance.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#lasso.CubeTransit.build_route_name" title="lasso.CubeTransit.build_route_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_route_name</span></code></a>([route_id, time_period, ...])</p></td>
+<td><p>Create a route name by contatenating route, time period, agency, and direction</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#lasso.CubeTransit.calculate_start_end_times" title="lasso.CubeTransit.calculate_start_end_times"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_start_end_times</span></code></a>(line_properties_dict)</p></td>
+<td><p>Calculate the start and end times of the property change WARNING: Doesn't take care of discongruous time periods!!!!</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#lasso.CubeTransit.create_add_route_card_dict" title="lasso.CubeTransit.create_add_route_card_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_add_route_card_dict</span></code></a>(line)</p></td>
+<td><p>Creates a project card change formatted dictionary for adding a route based on the information in self.route_properties for the line.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#lasso.CubeTransit.create_delete_route_card_dict" title="lasso.CubeTransit.create_delete_route_card_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_delete_route_card_dict</span></code></a>(line, ...)</p></td>
+<td><p>Creates a project card change formatted dictionary for deleting a line.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#lasso.CubeTransit.create_from_cube" title="lasso.CubeTransit.create_from_cube"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_from_cube</span></code></a>(transit_source[, parameters])</p></td>
+<td><p>Reads a cube .lin file and stores as TransitNetwork object.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#lasso.CubeTransit.create_update_route_card_dict" title="lasso.CubeTransit.create_update_route_card_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_update_route_card_dict</span></code></a>(line, ...)</p></td>
+<td><p>Creates a project card change formatted dictionary for updating the line.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#lasso.CubeTransit.cube_properties_to_standard_properties" title="lasso.CubeTransit.cube_properties_to_standard_properties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cube_properties_to_standard_properties</span></code></a>(...)</p></td>
+<td><p>Converts cube style properties to standard properties.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#lasso.CubeTransit.evaluate_differences" title="lasso.CubeTransit.evaluate_differences"><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate_differences</span></code></a>(base_transit)</p></td>
+<td><p><ol class="arabic simple">
+<li><p>Identifies what routes need to be updated, deleted, or added</p></li>
+</ol>
+</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#lasso.CubeTransit.evaluate_route_property_differences" title="lasso.CubeTransit.evaluate_route_property_differences"><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate_route_property_differences</span></code></a>(...[, ...])</p></td>
+<td><p>Checks if any values have been updated or added for a specific route and creates project card entries for each.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#lasso.CubeTransit.evaluate_route_shape_changes" title="lasso.CubeTransit.evaluate_route_shape_changes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate_route_shape_changes</span></code></a>(shape_build, ...)</p></td>
+<td><p>Compares two route shapes and constructs returns list of changes suitable for a project card.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#lasso.CubeTransit.get_time_period_numbers_from_cube_properties" title="lasso.CubeTransit.get_time_period_numbers_from_cube_properties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_time_period_numbers_from_cube_properties</span></code></a>(...)</p></td>
+<td><p>Finds properties that are associated with time periods and the returns the numbers in them.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#lasso.CubeTransit.unpack_route_name" title="lasso.CubeTransit.unpack_route_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unpack_route_name</span></code></a>(line_name)</p></td>
+<td><p>Unpacks route name into direction, route, agency, and time period info</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="lasso.CubeTransit.add_additional_time_periods">
+<span class="sig-name descname"><span class="pre">add_additional_time_periods</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_time_period_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orig_line_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lasso/transit/#CubeTransit.add_additional_time_periods"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lasso.CubeTransit.add_additional_time_periods" title="Permalink to this definition"></a></dt>
+<dd><p>Copies a route to another cube time period with appropriate
+values for time-period-specific properties.</p>
+<dl class="simple">
+<dt>New properties are stored under the new name in:</dt><dd><ul class="simple">
+<li><p>::self.shapes</p></li>
+<li><p>::self.line_properties</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>new_time_period_number</strong> (<em>int</em>) – cube time period number</p></li>
+<li><p><strong>orig_line_name</strong> (<em>str</em>) – name of the originating line, from which
+the new line will copy its properties.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Line name with new time period.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lasso.CubeTransit.add_cube">
+<span class="sig-name descname"><span class="pre">add_cube</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transit_source</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lasso/transit/#CubeTransit.add_cube"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lasso.CubeTransit.add_cube" title="Permalink to this definition"></a></dt>
+<dd><p>Reads a .lin file and adds it to existing TransitNetwork instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>transit_source</strong> – a string or the directory of the cube line file to be parsed</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lasso.CubeTransit.build_route_name">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">build_route_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">route_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_period</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agency_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direction_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lasso/transit/#CubeTransit.build_route_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lasso.CubeTransit.build_route_name" title="Permalink to this definition"></a></dt>
+<dd><p>Create a route name by contatenating route, time period, agency, and direction</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>route_id</strong> – i.e. 452-111</p></li>
+<li><p><strong>time_period</strong> – i.e. pk</p></li>
+<li><p><strong>direction_id</strong> – i.e. 1</p></li>
+<li><p><strong>agency_id</strong> – i.e. 0</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>constructed line_name i.e. “0_452-111_452_pk1”</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lasso.CubeTransit.calculate_start_end_times">
+<span class="sig-name descname"><span class="pre">calculate_start_end_times</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line_properties_dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lasso/transit/#CubeTransit.calculate_start_end_times"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lasso.CubeTransit.calculate_start_end_times" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the start and end times of the property change
+WARNING: Doesn’t take care of discongruous time periods!!!!</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>line_properties_dict</strong> – dictionary of cube-flavor properties for a transit line</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lasso.CubeTransit.create_add_route_card_dict">
+<span class="sig-name descname"><span class="pre">create_add_route_card_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lasso/transit/#CubeTransit.create_add_route_card_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lasso.CubeTransit.create_add_route_card_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a project card change formatted dictionary for adding
+a route based on the information in self.route_properties for
+the line.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>line</strong> – name of line that is being updated</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A project card change-formatted dictionary for the route addition.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lasso.CubeTransit.create_delete_route_card_dict">
+<span class="sig-name descname"><span class="pre">create_delete_route_card_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_transit_line_properties_dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lasso/transit/#CubeTransit.create_delete_route_card_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lasso.CubeTransit.create_delete_route_card_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a project card change formatted dictionary for deleting a line.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>line</strong> – name of line that is being deleted</p></li>
+<li><p><strong>base_transit_line_properties_dict</strong> – dictionary of cube-style
+attribute values in order to find time periods and
+start and end times.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A project card change-formatted dictionary for the route deletion.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lasso.CubeTransit.create_from_cube">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create_from_cube</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transit_source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lasso/transit/#CubeTransit.create_from_cube"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lasso.CubeTransit.create_from_cube" title="Permalink to this definition"></a></dt>
+<dd><p>Reads a cube .lin file and stores as TransitNetwork object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>transit_source</strong> – a string or the directory of the cube line file to be parsed</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A ::CubeTransit object created from the transit_source.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lasso.CubeTransit.create_update_route_card_dict">
+<span class="sig-name descname"><span class="pre">create_update_route_card_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">updated_properties_dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lasso/transit/#CubeTransit.create_update_route_card_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lasso.CubeTransit.create_update_route_card_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a project card change formatted dictionary for updating
+the line.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>line</strong> – name of line that is being updated</p></li>
+<li><p><strong>updated_properties_dict</strong> – dictionary of attributes to update as
+‘property’: &lt;property name&gt;,
+‘set’: &lt;new property value&gt;</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A project card change-formatted dictionary for the attribute update.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lasso.CubeTransit.cube_properties_to_standard_properties">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cube_properties_to_standard_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cube_properties_dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lasso/transit/#CubeTransit.cube_properties_to_standard_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lasso.CubeTransit.cube_properties_to_standard_properties" title="Permalink to this definition"></a></dt>
+<dd><p>Converts cube style properties to standard properties.</p>
+<p>This is most pertinent to time-period specific variables like headway,
+and varibles that have stnadard units like headway, which is minutes
+in cube and seconds in standard format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>cube_properties_dict</strong> – &lt;cube style property name&gt; : &lt;property value&gt;</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>&lt;standard</dt><dd><p>style property name&gt;, “set” : &lt;property value with correct units&gt;`</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>A list of dictionaries with values for <a href="#id1"><span class="problematic" id="id2">`</span></a>”property”</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lasso.CubeTransit.evaluate_differences">
+<span class="sig-name descname"><span class="pre">evaluate_differences</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_transit</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lasso/transit/#CubeTransit.evaluate_differences"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lasso.CubeTransit.evaluate_differences" title="Permalink to this definition"></a></dt>
+<dd><ol class="arabic simple">
+<li><p>Identifies what routes need to be updated, deleted, or added</p></li>
+<li><dl class="simple">
+<dt>For routes being added or updated, identify if the time periods</dt><dd><p>have changed or if there are multiples, and make duplicate lines if so</p>
+</dd>
+</dl>
+</li>
+<li><p>Create project card dictionaries for each change.</p></li>
+</ol>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>base_transit</strong> (<a class="reference internal" href="#lasso.CubeTransit" title="lasso.CubeTransit"><em>CubeTransit</em></a>) – an instance of this class for the base condition</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of dictionaries containing project card changes
+required to evaluate the differences between the base network
+and this transit network instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lasso.CubeTransit.evaluate_route_property_differences">
+<span class="sig-name descname"><span class="pre">evaluate_route_property_differences</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">properties_build</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">properties_base</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_period_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">absolute</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validate_base</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lasso/transit/#CubeTransit.evaluate_route_property_differences"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lasso.CubeTransit.evaluate_route_property_differences" title="Permalink to this definition"></a></dt>
+<dd><p>Checks if any values have been updated or added for a specific
+route and creates project card entries for each.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>properties_build</strong> – ::&lt;property_name&gt;: &lt;property_value&gt;</p></li>
+<li><p><strong>properties_base</strong> – ::&lt;property_name&gt;: &lt;property_value&gt;</p></li>
+<li><p><strong>time_period_number</strong> – time period to evaluate</p></li>
+<li><p><strong>absolute</strong> – if True, will use <cite>set</cite> command rather than a change.  If false, will automatically check the base value.  Note that this only applies to the numeric values of frequency/headway</p></li>
+<li><p><strong>validate_base</strong> – if True, will add the <cite>existing</cite> line in the project card</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>a list of dictionary values suitable for writing to a project card</dt><dd><p><cite>{
+‘property’: &lt;property_name&gt;,
+‘set’: &lt;set value&gt;,
+‘change’: &lt;change from existing value&gt;,
+‘existing’: &lt;existing value to check&gt;,
+}</cite></p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>transit_change_list (list)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lasso.CubeTransit.evaluate_route_shape_changes">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">evaluate_route_shape_changes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape_build</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape_base</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lasso/transit/#CubeTransit.evaluate_route_shape_changes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lasso.CubeTransit.evaluate_route_shape_changes" title="Permalink to this definition"></a></dt>
+<dd><p>Compares two route shapes and constructs returns list of changes
+suitable for a project card.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>shape_build</strong> – DataFrame of the build-version of the route shape.</p></li>
+<li><p><strong>shape_base</strong> – dDataFrame of the base-version of the route shape.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of shape changes formatted as a project card-change dictionary.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lasso.CubeTransit.get_time_period_numbers_from_cube_properties">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_time_period_numbers_from_cube_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">properties_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lasso/transit/#CubeTransit.get_time_period_numbers_from_cube_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lasso.CubeTransit.get_time_period_numbers_from_cube_properties" title="Permalink to this definition"></a></dt>
+<dd><p>Finds properties that are associated with time periods and the
+returns the numbers in them.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>properties_list</strong> (<em>list</em>) – list of all properties.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of strings of the time period numbers found</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lasso.CubeTransit.unpack_route_name">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">unpack_route_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lasso/transit/#CubeTransit.unpack_route_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lasso.CubeTransit.unpack_route_name" title="Permalink to this definition"></a></dt>
+<dd><p>Unpacks route name into direction, route, agency, and time period info</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>line_name</strong> (<em>str</em>) – i.e. “0_452-111_452_pk1”</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>452-111
+time_period (str): i.e. pk
+direction_id (str) : i.e. 1
+agency_id (str) : i.e. 0</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>route_id (str)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../../autodoc/" class="btn btn-neutral float-left" title="Lasso Classes and Functions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../lasso.StandardTransit/" class="btn btn-neutral float-right" title="lasso.StandardTransit" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2019-2022 Metropolitan Council, Metropolitan Transportation Commission.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

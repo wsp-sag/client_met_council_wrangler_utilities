@@ -1,0 +1,104 @@
+﻿lasso.ModelRoadwayNetwork
+=========================
+
+.. currentmodule:: lasso
+
+.. autoclass:: ModelRoadwayNetwork
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~ModelRoadwayNetwork.__init__
+      ~ModelRoadwayNetwork.add_counts
+      ~ModelRoadwayNetwork.add_new_roadway_feature_change
+      ~ModelRoadwayNetwork.add_variable_using_shst_reference
+      ~ModelRoadwayNetwork.addition_map
+      ~ModelRoadwayNetwork.apply
+      ~ModelRoadwayNetwork.apply_managed_lane_feature_change
+      ~ModelRoadwayNetwork.apply_python_calculation
+      ~ModelRoadwayNetwork.apply_roadway_feature_change
+      ~ModelRoadwayNetwork.assess_connectivity
+      ~ModelRoadwayNetwork.build_selection_key
+      ~ModelRoadwayNetwork.calculate_area_type
+      ~ModelRoadwayNetwork.calculate_assign_group_and_roadway_class
+      ~ModelRoadwayNetwork.calculate_centroidconnect
+      ~ModelRoadwayNetwork.calculate_county
+      ~ModelRoadwayNetwork.calculate_distance
+      ~ModelRoadwayNetwork.calculate_hov
+      ~ModelRoadwayNetwork.calculate_mpo
+      ~ModelRoadwayNetwork.convert_int
+      ~ModelRoadwayNetwork.create_ML_variable
+      ~ModelRoadwayNetwork.create_calculated_variables
+      ~ModelRoadwayNetwork.create_dummy_connector_links
+      ~ModelRoadwayNetwork.create_hov_corridor_variable
+      ~ModelRoadwayNetwork.create_managed_lane_network
+      ~ModelRoadwayNetwork.create_managed_variable
+      ~ModelRoadwayNetwork.dataframe_to_fixed_width
+      ~ModelRoadwayNetwork.delete_roadway_feature_change
+      ~ModelRoadwayNetwork.deletion_map
+      ~ModelRoadwayNetwork.fill_na
+      ~ModelRoadwayNetwork.from_RoadwayNetwork
+      ~ModelRoadwayNetwork.get_attribute
+      ~ModelRoadwayNetwork.get_managed_lane_node_ids
+      ~ModelRoadwayNetwork.get_modal_graph
+      ~ModelRoadwayNetwork.get_modal_links_nodes
+      ~ModelRoadwayNetwork.get_property_by_time_period_and_group
+      ~ModelRoadwayNetwork.is_network_connected
+      ~ModelRoadwayNetwork.network_connection_plot
+      ~ModelRoadwayNetwork.orig_dest_nodes_foreign_key
+      ~ModelRoadwayNetwork.ox_graph
+      ~ModelRoadwayNetwork.read
+      ~ModelRoadwayNetwork.read_match_result
+      ~ModelRoadwayNetwork.rename_variables_for_dbf
+      ~ModelRoadwayNetwork.roadway_net_to_gdf
+      ~ModelRoadwayNetwork.roadway_standard_to_met_council_network
+      ~ModelRoadwayNetwork.select_roadway_features
+      ~ModelRoadwayNetwork.selection_has_unique_link_id
+      ~ModelRoadwayNetwork.selection_map
+      ~ModelRoadwayNetwork.split_properties_by_time_period_and_category
+      ~ModelRoadwayNetwork.validate_link_schema
+      ~ModelRoadwayNetwork.validate_node_schema
+      ~ModelRoadwayNetwork.validate_object_types
+      ~ModelRoadwayNetwork.validate_properties
+      ~ModelRoadwayNetwork.validate_selection
+      ~ModelRoadwayNetwork.validate_shape_schema
+      ~ModelRoadwayNetwork.validate_uniqueness
+      ~ModelRoadwayNetwork.write
+      ~ModelRoadwayNetwork.write_roadway_as_fixedwidth
+      ~ModelRoadwayNetwork.write_roadway_as_shp
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~ModelRoadwayNetwork.CALCULATED_VALUES
+      ~ModelRoadwayNetwork.CRS
+      ~ModelRoadwayNetwork.KEEP_SAME_ATTRIBUTES_ML_AND_GP
+      ~ModelRoadwayNetwork.LINK_FOREIGN_KEY
+      ~ModelRoadwayNetwork.MANAGED_LANES_LINK_ID_SCALAR
+      ~ModelRoadwayNetwork.MANAGED_LANES_NODE_ID_SCALAR
+      ~ModelRoadwayNetwork.MANAGED_LANES_REQUIRED_ATTRIBUTES
+      ~ModelRoadwayNetwork.MANAGED_LANES_SCALAR
+      ~ModelRoadwayNetwork.MAX_SEARCH_BREADTH
+      ~ModelRoadwayNetwork.MODES_TO_NETWORK_LINK_VARIABLES
+      ~ModelRoadwayNetwork.MODES_TO_NETWORK_NODE_VARIABLES
+      ~ModelRoadwayNetwork.NODE_FOREIGN_KEY
+      ~ModelRoadwayNetwork.SEARCH_BREADTH
+      ~ModelRoadwayNetwork.SELECTION_REQUIRES
+      ~ModelRoadwayNetwork.SP_WEIGHT_FACTOR
+      ~ModelRoadwayNetwork.UNIQUE_LINK_KEY
+      ~ModelRoadwayNetwork.UNIQUE_MODEL_LINK_IDENTIFIERS
+      ~ModelRoadwayNetwork.UNIQUE_NODE_IDENTIFIERS
+      ~ModelRoadwayNetwork.UNIQUE_NODE_KEY
+      ~ModelRoadwayNetwork.UNIQUE_SHAPE_KEY
+   
+   

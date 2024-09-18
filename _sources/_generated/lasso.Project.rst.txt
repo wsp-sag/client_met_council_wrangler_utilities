@@ -1,0 +1,37 @@
+﻿lasso.Project
+=============
+
+.. currentmodule:: lasso
+
+.. autoclass:: Project
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~Project.__init__
+      ~Project.add_highway_changes
+      ~Project.add_transit_changes
+      ~Project.create_project
+      ~Project.determine_roadway_network_changes_compatability
+      ~Project.evaluate_changes
+      ~Project.read_logfile
+      ~Project.write_project_card
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~Project.CALCULATED_VALUES
+      ~Project.DEFAULT_PROJECT_NAME
+      ~Project.STATIC_VALUES
+   
+   

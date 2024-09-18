@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>lasso.util &mdash; lasso  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js?v=df4b10f6"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex/" />
+    <link rel="search" title="Search" href="../../../search/" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../" class="icon icon-home">
+            lasso
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search/" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../starting/">Starting Out</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../setup/">Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../running/">Running Lasso</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../autodoc/">Lasso Classes and Functions</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../">lasso</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../">Module code</a></li>
+      <li class="breadcrumb-item active">lasso.util</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for lasso.util</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">import</span> <span class="nn">pyproj</span>
+<span class="kn">from</span> <span class="nn">shapely.ops</span> <span class="kn">import</span> <span class="n">transform</span>
+<span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="kn">import</span> <span class="n">Point</span><span class="p">,</span> <span class="n">Polygon</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">unidecode</span> <span class="kn">import</span> <span class="n">unidecode</span>
+
+<div class="viewcode-block" id="get_shared_streets_intersection_hash"><a class="viewcode-back" href="../../../_generated/lasso.util/#lasso.util.get_shared_streets_intersection_hash">[docs]</a><span class="k">def</span> <span class="nf">get_shared_streets_intersection_hash</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">long</span><span class="p">,</span> <span class="n">osm_node_id</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculated per:</span>
+<span class="sd">       https://github.com/sharedstreets/sharedstreets-js/blob/0e6d7de0aee2e9ae3b007d1e45284b06cc241d02/src/index.ts#L553-L565</span>
+<span class="sd">    Expected in/out</span>
+<span class="sd">      -93.0965985, 44.952112199999995 osm_node_id = 954734870</span>
+<span class="sd">       69f13f881649cb21ee3b359730790bb9</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">hashlib</span>
+
+    <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Intersection </span><span class="si">{0:.5f}</span><span class="s2"> </span><span class="si">{0:.5f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">long</span><span class="p">,</span> <span class="n">lat</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">osm_node_id</span><span class="p">:</span>
+        <span class="n">message</span> <span class="o">+=</span> <span class="s2">&quot; </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">osm_node_id</span><span class="p">)</span>
+    <span class="n">unhashed</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+    <span class="nb">hash</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="n">unhashed</span><span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+    <span class="k">return</span> <span class="nb">hash</span></div>
+
+
+<div class="viewcode-block" id="hhmmss_to_datetime"><a class="viewcode-back" href="../../../_generated/lasso.util/#lasso.util.hhmmss_to_datetime">[docs]</a><span class="k">def</span> <span class="nf">hhmmss_to_datetime</span><span class="p">(</span><span class="n">hhmmss_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates a datetime time object from a string of hh:mm:ss</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        hhmmss_str: string of hh:mm:ss</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        dt: datetime.time object representing time</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">datetime</span>
+
+    <span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">time</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">hhmmss_str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)])</span>
+
+    <span class="k">return</span> <span class="n">dt</span></div>
+
+
+<div class="viewcode-block" id="secs_to_datetime"><a class="viewcode-back" href="../../../_generated/lasso.util/#lasso.util.secs_to_datetime">[docs]</a><span class="k">def</span> <span class="nf">secs_to_datetime</span><span class="p">(</span><span class="n">secs</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates a datetime time object from a seconds from midnight</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        secs: seconds from midnight</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        dt: datetime.time object representing time</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">datetime</span>
+
+    <span class="n">dt</span> <span class="o">=</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">min</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">secs</span><span class="p">))</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">dt</span></div>
+
+
+<div class="viewcode-block" id="geodesic_point_buffer"><a class="viewcode-back" href="../../../_generated/lasso.util/#lasso.util.geodesic_point_buffer">[docs]</a><span class="k">def</span> <span class="nf">geodesic_point_buffer</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">meters</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    creates circular buffer polygon for node</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        lat: node lat</span>
+<span class="sd">        lon: node lon</span>
+<span class="sd">        meters: buffer distance, radius of circle</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        Polygon</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">proj_wgs84</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">Proj</span><span class="p">(</span><span class="s1">&#39;+proj=longlat +datum=WGS84&#39;</span><span class="p">)</span>
+    <span class="c1"># Azimuthal equidistant projection</span>
+    <span class="n">aeqd_proj</span> <span class="o">=</span> <span class="s1">&#39;+proj=aeqd +lat_0=</span><span class="si">{lat}</span><span class="s1"> +lon_0=</span><span class="si">{lon}</span><span class="s1"> +x_0=0 +y_0=0&#39;</span>
+    <span class="n">project</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
+        <span class="n">pyproj</span><span class="o">.</span><span class="n">transform</span><span class="p">,</span>
+        <span class="n">pyproj</span><span class="o">.</span><span class="n">Proj</span><span class="p">(</span><span class="n">aeqd_proj</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lat</span><span class="o">=</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="o">=</span><span class="n">lon</span><span class="p">)),</span>
+        <span class="n">proj_wgs84</span><span class="p">)</span>
+    <span class="n">buf</span> <span class="o">=</span> <span class="n">Point</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">buffer</span><span class="p">(</span><span class="n">meters</span><span class="p">)</span>  <span class="c1"># distance in meters</span>
+    <span class="k">return</span> <span class="n">Polygon</span><span class="p">(</span><span class="n">transform</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">buf</span><span class="p">)</span><span class="o">.</span><span class="n">exterior</span><span class="o">.</span><span class="n">coords</span><span class="p">[:])</span></div>
+
+<div class="viewcode-block" id="create_locationreference"><a class="viewcode-back" href="../../../_generated/lasso.util/#lasso.util.create_locationreference">[docs]</a><span class="k">def</span> <span class="nf">create_locationreference</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">link</span><span class="p">):</span>
+    <span class="n">node</span><span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">node</span><span class="p">[</span><span class="s1">&#39;Y&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+    <span class="n">node</span><span class="p">[</span><span class="s1">&#39;point&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">xy</span><span class="p">)</span> <span class="k">for</span> <span class="n">xy</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">X</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">Y</span><span class="p">)]</span>
+    <span class="n">node_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">model_node_id</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">point</span><span class="p">))</span>
+
+    <span class="n">link</span><span class="p">[</span><span class="s1">&#39;A_point&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">link</span><span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">node_dict</span><span class="p">)</span>
+    <span class="n">link</span><span class="p">[</span><span class="s1">&#39;B_point&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">link</span><span class="p">[</span><span class="s1">&#39;B&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">node_dict</span><span class="p">)</span>
+    <span class="n">link</span><span class="p">[</span><span class="s1">&#39;locationReferences&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">link</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">[{</span><span class="s1">&#39;sequence&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span>
+                                                        <span class="s1">&#39;point&#39;</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;A_point&#39;</span><span class="p">],</span>
+                                                        <span class="s1">&#39;distanceToNextRef&#39;</span><span class="p">:</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;length&#39;</span><span class="p">],</span>
+                                                        <span class="s1">&#39;bearing&#39;</span> <span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                                                        <span class="s1">&#39;intersectionId&#39;</span><span class="p">:</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;fromIntersectionId&#39;</span><span class="p">]},</span>
+                                                                         <span class="p">{</span><span class="s1">&#39;sequence&#39;</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span>
+                                                             <span class="s1">&#39;point&#39;</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;B_point&#39;</span><span class="p">],</span>
+                                                             <span class="s1">&#39;intersectionId&#39;</span><span class="p">:</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;toIntersectionId&#39;</span><span class="p">]}],</span>
+                                                   <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="column_name_to_parts"><a class="viewcode-back" href="../../../_generated/lasso.util/#lasso.util.column_name_to_parts">[docs]</a><span class="k">def</span> <span class="nf">column_name_to_parts</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">parameters</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">.parameters</span> <span class="kn">import</span> <span class="n">Parameters</span>
+
+        <span class="n">parameters</span> <span class="o">=</span> <span class="n">Parameters</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;ML&quot;</span><span class="p">:</span>
+        <span class="n">managed</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">managed</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="n">time_period</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">category</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">parameters</span><span class="o">.</span><span class="n">properties_to_split</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">c</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">managed</span>
+
+    <span class="n">tps</span> <span class="o">=</span> <span class="n">parameters</span><span class="o">.</span><span class="n">time_period_to_time</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+    <span class="n">cats</span> <span class="o">=</span> <span class="n">parameters</span><span class="o">.</span><span class="n">categories</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="n">tps</span><span class="p">:</span>
+        <span class="n">time_period</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">base_name</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">time_period</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="ow">in</span> <span class="n">cats</span><span class="p">:</span>
+            <span class="n">category</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+            <span class="n">base_name</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">category</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">c</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="n">cats</span><span class="p">:</span>
+        <span class="n">category</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">base_name</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">category</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Can&#39;t split property correctly: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+        <span class="n">WranglerLogger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">base_name</span><span class="p">,</span> <span class="n">time_period</span><span class="p">,</span> <span class="n">category</span><span class="p">,</span> <span class="n">managed</span></div>
+
+<div class="viewcode-block" id="shorten_name"><a class="viewcode-back" href="../../../_generated/lasso.util/#lasso.util.shorten_name">[docs]</a><span class="k">def</span> <span class="nf">shorten_name</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">name_list</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">name_list</span> <span class="o">=</span> <span class="n">name</span>
+    <span class="n">name_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\W+&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;nan&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">name_list</span><span class="p">]</span>
+
+    <span class="n">name_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">name_list</span><span class="p">))</span>
+    <span class="c1">#name_list.remove(&#39;&#39;)</span>
+
+    <span class="n">name_new</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">name_list</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+
+    <span class="c1"># convert non english character to english</span>
+    <span class="n">name_new</span> <span class="o">=</span> <span class="n">unidecode</span><span class="p">(</span><span class="n">name_new</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">name_new</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2019 Metropolitan Council.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

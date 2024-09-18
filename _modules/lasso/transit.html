@@ -1,0 +1,1521 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>lasso.transit &mdash; lasso  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> lasso
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../starting.html">Starting Out</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../setup.html">Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../running.html">Running Lasso</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../autodoc.html">Lasso Classes and Functions</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">lasso</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>lasso.transit</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for lasso.transit</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Transit-related classes to parse, compare, and write standard and cube transit files.</span>
+
+<span class="sd">  Typical usage example:</span>
+
+<span class="sd">    tn = CubeTransit.create_from_cube(CUBE_DIR)</span>
+<span class="sd">    transit_change_list = tn.evaluate_differences(base_transit_network)</span>
+
+<span class="sd">    cube_transit_net = StandardTransit.read_gtfs(BASE_TRANSIT_DIR)</span>
+<span class="sd">    cube_transit_net.write_as_cube_lin(os.path.join(WRITE_DIR, &quot;outfile.lin&quot;))</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">csv</span>
+<span class="kn">import</span> <span class="nn">datetime</span><span class="o">,</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">lark</span> <span class="kn">import</span> <span class="n">Lark</span><span class="p">,</span> <span class="n">Transformer</span><span class="p">,</span> <span class="n">v_args</span>
+<span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">DataFrame</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">partridge</span> <span class="k">as</span> <span class="nn">ptg</span>
+
+<span class="kn">from</span> <span class="nn">network_wrangler</span> <span class="kn">import</span> <span class="n">TransitNetwork</span>
+
+<span class="kn">from</span> <span class="nn">.logger</span> <span class="kn">import</span> <span class="n">WranglerLogger</span>
+<span class="kn">from</span> <span class="nn">.parameters</span> <span class="kn">import</span> <span class="n">Parameters</span>
+
+
+<div class="viewcode-block" id="CubeTransit"><a class="viewcode-back" href="../../_generated/lasso.CubeTransit.html#lasso.CubeTransit">[docs]</a><span class="k">class</span> <span class="nc">CubeTransit</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Class for storing information about transit defined in Cube line</span>
+<span class="sd">    files.</span>
+
+<span class="sd">    Has the capability to:</span>
+
+<span class="sd">     - Parse cube line file properties and shapes into python dictionaries</span>
+<span class="sd">     - Compare line files and represent changes as Project Card dictionaries</span>
+
+<span class="sd">    .. highlight:: python</span>
+
+<span class="sd">    Typical usage example:</span>
+<span class="sd">    ::</span>
+<span class="sd">        tn = CubeTransit.create_from_cube(CUBE_DIR)</span>
+<span class="sd">        transit_change_list = tn.evaluate_differences(base_transit_network)</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        lines (list): list of strings representing unique line names in</span>
+<span class="sd">            the cube network.</span>
+<span class="sd">        line_properties (dict): dictionary of line properties keyed by line name. Property</span>
+<span class="sd">            values are stored in a dictionary by property name. These</span>
+<span class="sd">            properties are directly read from the cube line files and haven&#39;t</span>
+<span class="sd">            been translated to standard transit values.</span>
+<span class="sd">        shapes (dict): dictionary of shapes</span>
+<span class="sd">            keyed by line name. Shapes stored as a pandas DataFrame of nodes with following columns:</span>
+<span class="sd">              - &#39;node_id&#39; (int): positive integer of node id</span>
+<span class="sd">              - &#39;node&#39; (int): node number, with negative indicating a non-stop</span>
+<span class="sd">              - &#39;stop&#39; (boolean): indicates if it is a stop</span>
+<span class="sd">              - &#39;order&#39; (int):  order within this shape</span>
+<span class="sd">        program_type (str): Either PT or TRNBLD</span>
+<span class="sd">        parameters (Parameters):</span>
+<span class="sd">            Parameters instance that will be applied to this instance which</span>
+<span class="sd">            includes information about time periods and variables.</span>
+<span class="sd">        source_list (list):</span>
+<span class="sd">            List of cube line file sources that have been read and added.</span>
+<span class="sd">        diff_dict (dict):</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CubeTransit.__init__"><a class="viewcode-back" href="../../_generated/lasso.CubeTransit.html#lasso.CubeTransit.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Parameters</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor  for CubeTransit</span>
+
+<span class="sd">        parameters: dictionary of parameter settings (see Parameters class) or an instance of Parameters</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Creating a new Cube Transit instance&quot;</span><span class="p">)</span>
+        <span class="n">WranglerLogger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Creating a new Cube Transit instance&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">line_properties</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shapes</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">program_type</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">Parameters</span><span class="p">(</span><span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">Parameters</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">Parameters</span><span class="p">(</span><span class="o">**</span><span class="n">parameters</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Parameters should be a dict or instance of Parameters: found </span><span class="si">{}</span><span class="s2"> which is of type:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">parameters</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">WranglerLogger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">source_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">diff_dict</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="CubeTransit.add_cube"><a class="viewcode-back" href="../../_generated/lasso.CubeTransit.html#lasso.CubeTransit.add_cube">[docs]</a>    <span class="k">def</span> <span class="nf">add_cube</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transit_source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Reads a .lin file and adds it to existing TransitNetwork instance.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            transit_source:  a string or the directory of the cube line file to be parsed</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Figure out what kind of transit source it is</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">Lark</span><span class="p">(</span><span class="n">TRANSIT_LINE_FILE_GRAMMAR</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="s2">&quot;debug&quot;</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="s2">&quot;lalr&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;NAME=&quot;</span> <span class="ow">in</span> <span class="n">transit_source</span><span class="p">:</span>
+            <span class="n">WranglerLogger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;reading transit source as string&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">source_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;input_str&quot;</span><span class="p">)</span>
+            <span class="n">parse_tree</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">transit_source</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">transit_source</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;reading: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">transit_source</span><span class="p">))</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">transit_source</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+                <span class="n">WranglerLogger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="s2">&quot;reading transit source: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">transit_source</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">source_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">transit_source</span><span class="p">)</span>
+                <span class="n">parse_tree</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">transit_source</span><span class="p">):</span>
+            <span class="kn">import</span> <span class="nn">glob</span>
+
+            <span class="k">for</span> <span class="n">lin_file</span> <span class="ow">in</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">transit_source</span><span class="p">,</span> <span class="s2">&quot;*.LIN&quot;</span><span class="p">)):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_cube</span><span class="p">(</span><span class="n">lin_file</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span><span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> not a valid transit line string, directory, or file&quot;</span>
+            <span class="n">WranglerLogger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="n">WranglerLogger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;finished parsing cube line file&quot;</span><span class="p">)</span>
+        <span class="c1">#WranglerLogger.debug(&quot;--Parse Tree--\n {}&quot;.format(parse_tree.pretty()))</span>
+        <span class="n">transformed_tree_data</span> <span class="o">=</span> <span class="n">CubeTransformer</span><span class="p">()</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">parse_tree</span><span class="p">)</span>
+        <span class="c1">#WranglerLogger.debug(&quot;--Transformed Parse Tree--\n {}&quot;.format(transformed_tree_data))</span>
+
+        <span class="n">_line_data</span> <span class="o">=</span> <span class="n">transformed_tree_data</span><span class="p">[</span><span class="s1">&#39;lines&#39;</span><span class="p">]</span>
+
+        <span class="n">line_properties_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;line_properties&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">_line_data</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">}</span>
+        <span class="n">line_shapes_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;line_shape&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">_line_data</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">}</span>
+        <span class="n">new_lines</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">line_properties_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Before adding lines, check to see if any are overlapping with existing ones in the network</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">overlapping_lines</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">new_lines</span><span class="p">)</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lines</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">overlapping_lines</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Overlapping lines found when adding from </span><span class="si">{}</span><span class="s2">. </span><span class="se">\n</span><span class="s2">Source files:</span><span class="se">\n</span><span class="si">{}</span><span class="se">\n</span><span class="si">{}</span><span class="s2"> Overlapping Lines of </span><span class="si">{}</span><span class="s2"> total new lines.</span><span class="se">\n</span><span class="s2">--&gt;</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">transit_source</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> - &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source_list</span><span class="p">),</span>
+                <span class="nb">len</span><span class="p">(</span><span class="n">new_lines</span><span class="p">),</span>
+                <span class="nb">len</span><span class="p">(</span><span class="n">overlapping_lines</span><span class="p">),</span>
+                <span class="n">overlapping_lines</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="n">WranglerLogger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">program_type</span> <span class="o">=</span> <span class="n">transformed_tree_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;program_type&quot;</span><span class="p">,</span><span class="kc">None</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">lines</span> <span class="o">+=</span> <span class="n">new_lines</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">line_properties</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">line_properties_dict</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shapes</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">line_shapes_dict</span><span class="p">)</span>
+
+        <span class="n">WranglerLogger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Added lines to CubeTransit: </span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">new_lines</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="CubeTransit.create_from_cube"><a class="viewcode-back" href="../../_generated/lasso.CubeTransit.html#lasso.CubeTransit.create_from_cube">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">create_from_cube</span><span class="p">(</span><span class="n">transit_source</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reads a cube .lin file and stores as TransitNetwork object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            transit_source:  a string or the directory of the cube line file to be parsed</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A ::CubeTransit object created from the transit_source.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">tn</span> <span class="o">=</span> <span class="n">CubeTransit</span><span class="p">()</span>
+        <span class="n">tn</span><span class="o">.</span><span class="n">add_cube</span><span class="p">(</span><span class="n">transit_source</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">tn</span></div>
+
+<div class="viewcode-block" id="CubeTransit.evaluate_differences"><a class="viewcode-back" href="../../_generated/lasso.CubeTransit.html#lasso.CubeTransit.evaluate_differences">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_differences</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_transit</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        1. Identifies what routes need to be updated, deleted, or added</span>
+<span class="sd">        2. For routes being added or updated, identify if the time periods</span>
+<span class="sd">            have changed or if there are multiples, and make duplicate lines if so</span>
+<span class="sd">        3. Create project card dictionaries for each change.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            base_transit (CubeTransit): an instance of this class for the base condition</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A list of dictionaries containing project card changes</span>
+<span class="sd">            required to evaluate the differences between the base network</span>
+<span class="sd">            and this transit network instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">transit_change_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Identify what needs to be evaluated</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">lines_to_update</span> <span class="o">=</span> <span class="p">[</span><span class="n">l</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">lines</span> <span class="k">if</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">base_transit</span><span class="o">.</span><span class="n">lines</span><span class="p">]</span>
+        <span class="n">lines_to_delete</span> <span class="o">=</span> <span class="p">[</span><span class="n">l</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">base_transit</span><span class="o">.</span><span class="n">lines</span> <span class="k">if</span> <span class="n">l</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">lines</span><span class="p">]</span>
+        <span class="n">lines_to_add</span> <span class="o">=</span> <span class="p">[</span><span class="n">l</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">lines</span> <span class="k">if</span> <span class="n">l</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">base_transit</span><span class="o">.</span><span class="n">lines</span><span class="p">]</span>
+
+        <span class="n">project_card_changes</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Evaluate Property Updates</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines_to_update</span><span class="p">:</span>
+            <span class="n">WranglerLogger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="s2">&quot;Finding differences in time periods for: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="p">)</span>
+
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Find any additional time periods that might need to add or delete.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">base_cube_time_period_numbers</span> <span class="o">=</span> <span class="n">CubeTransit</span><span class="o">.</span><span class="n">get_time_period_numbers_from_cube_properties</span><span class="p">(</span>
+                <span class="n">base_transit</span><span class="o">.</span><span class="n">line_properties</span><span class="p">[</span><span class="n">line</span><span class="p">]</span>
+            <span class="p">)</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">base_cube_time_period_numbers</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Base network line </span><span class="si">{}</span><span class="s2"> should only have one time period per route, but </span><span class="si">{}</span><span class="s2"> found&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">line</span><span class="p">,</span> <span class="n">base_cube_time_period_numbers</span>
+                <span class="p">)</span>
+                <span class="n">WranglerLogger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+            <span class="n">base_cube_time_period_number</span> <span class="o">=</span> <span class="n">base_cube_time_period_numbers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="n">build_cube_time_period_numbers</span> <span class="o">=</span> <span class="n">CubeTransit</span><span class="o">.</span><span class="n">get_time_period_numbers_from_cube_properties</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">line_properties</span><span class="p">[</span><span class="n">line</span><span class="p">]</span>
+            <span class="p">)</span>
+
+            <span class="n">time_periods_to_add</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">tp</span>
+                <span class="k">for</span> <span class="n">tp</span> <span class="ow">in</span> <span class="n">build_cube_time_period_numbers</span>
+                <span class="k">if</span> <span class="n">tp</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">base_cube_time_period_numbers</span>
+            <span class="p">]</span>
+
+            <span class="k">for</span> <span class="n">tp</span> <span class="ow">in</span> <span class="n">time_periods_to_add</span><span class="p">:</span>
+                <span class="n">lines_to_add</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">add_additional_time_periods</span><span class="p">(</span><span class="n">tp</span><span class="p">,</span> <span class="n">line</span><span class="p">))</span>
+
+            <span class="n">time_periods_to_delete</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">tp</span>
+                <span class="k">for</span> <span class="n">tp</span> <span class="ow">in</span> <span class="n">base_cube_time_period_numbers</span>
+                <span class="k">if</span> <span class="n">tp</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">build_cube_time_period_numbers</span>
+            <span class="p">]</span>
+
+            <span class="k">for</span> <span class="n">tp</span> <span class="ow">in</span> <span class="n">time_periods_to_delete</span><span class="p">:</span>
+                <span class="n">lines_to_delete</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+            <span class="n">WranglerLogger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Evaluating differences in: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">line</span><span class="p">))</span>
+            <span class="n">updated_properties</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_route_property_differences</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">line_properties</span><span class="p">[</span><span class="n">line</span><span class="p">],</span>
+                <span class="n">base_transit</span><span class="o">.</span><span class="n">line_properties</span><span class="p">[</span><span class="n">line</span><span class="p">],</span>
+                <span class="n">base_cube_time_period_number</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">updated_shapes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_route_shape_changes</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">shapes</span><span class="p">[</span><span class="n">line</span><span class="p">],</span> <span class="n">base_transit</span><span class="o">.</span><span class="n">shapes</span><span class="p">[</span><span class="n">line</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">updated_properties</span><span class="p">:</span>
+                <span class="n">update_prop_card_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_update_route_card_dict</span><span class="p">(</span>
+                    <span class="n">line</span><span class="p">,</span> <span class="n">updated_properties</span>
+                <span class="p">)</span>
+                <span class="n">project_card_changes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">update_prop_card_dict</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">updated_shapes</span><span class="p">:</span>
+                <span class="n">update_shape_card_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_update_route_card_dict</span><span class="p">(</span>
+                    <span class="n">line</span><span class="p">,</span> <span class="n">updated_shapes</span>
+                <span class="p">)</span>
+                <span class="n">project_card_changes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">update_shape_card_dict</span><span class="p">)</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Evaluate Deletions</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines_to_delete</span><span class="p">:</span>
+            <span class="n">delete_card_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_delete_route_card_dict</span><span class="p">(</span>
+                <span class="n">line</span><span class="p">,</span> <span class="n">base_transit</span><span class="o">.</span><span class="n">line_properties</span><span class="p">[</span><span class="n">line</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">project_card_changes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">delete_card_dict</span><span class="p">)</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Evaluate Additions</span>
+
+<span class="sd">        First assess if need to add multiple routes if there are multiple time periods</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines_to_add</span><span class="p">:</span>
+            <span class="n">time_period_numbers</span> <span class="o">=</span> <span class="n">CubeTransit</span><span class="o">.</span><span class="n">get_time_period_numbers_from_cube_properties</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">line_properties</span><span class="p">[</span><span class="n">line</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">time_period_numbers</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">tp</span> <span class="ow">in</span> <span class="n">time_period_numbers</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+                    <span class="n">lines_to_add</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">add_additional_time_periods</span><span class="p">(</span><span class="n">tp</span><span class="p">,</span> <span class="n">line</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines_to_add</span><span class="p">:</span>
+            <span class="n">add_card_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_add_route_card_dict</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="n">project_card_changes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">add_card_dict</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">project_card_changes</span></div>
+
+<div class="viewcode-block" id="CubeTransit.add_additional_time_periods"><a class="viewcode-back" href="../../_generated/lasso.CubeTransit.html#lasso.CubeTransit.add_additional_time_periods">[docs]</a>    <span class="k">def</span> <span class="nf">add_additional_time_periods</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">new_time_period_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">orig_line_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Copies a route to another cube time period with appropriate</span>
+<span class="sd">        values for time-period-specific properties.</span>
+
+<span class="sd">        New properties are stored under the new name in:</span>
+<span class="sd">         - ::self.shapes</span>
+<span class="sd">         - ::self.line_properties</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            new_time_period_number (int): cube time period number</span>
+<span class="sd">            orig_line_name(str): name of the originating line, from which</span>
+<span class="sd">                the new line will copy its properties.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Line name with new time period.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">WranglerLogger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">&quot;adding time periods </span><span class="si">{}</span><span class="s2"> to line </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">new_time_period_number</span><span class="p">,</span> <span class="n">orig_line_name</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="p">(</span>
+            <span class="n">route_id</span><span class="p">,</span>
+            <span class="n">_init_time_period</span><span class="p">,</span>
+            <span class="n">agency_id</span><span class="p">,</span>
+            <span class="n">direction_id</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="n">CubeTransit</span><span class="o">.</span><span class="n">unpack_route_name</span><span class="p">(</span><span class="n">orig_line_name</span><span class="p">)</span>
+        <span class="n">new_time_period_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">cube_time_periods</span><span class="p">[</span><span class="n">new_time_period_number</span><span class="p">]</span>
+        <span class="n">new_tp_line_name</span> <span class="o">=</span> <span class="n">CubeTransit</span><span class="o">.</span><span class="n">build_route_name</span><span class="p">(</span>
+            <span class="n">route_id</span><span class="o">=</span><span class="n">route_id</span><span class="p">,</span>
+            <span class="n">time_period</span><span class="o">=</span><span class="n">new_time_period_name</span><span class="p">,</span>
+            <span class="n">agency_id</span><span class="o">=</span><span class="n">agency_id</span><span class="p">,</span>
+            <span class="n">direction_id</span><span class="o">=</span><span class="n">direction_id</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">new_tp_line_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">lines</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Trying to add a new time period </span><span class="si">{}</span><span class="s2"> to line </span><span class="si">{}</span><span class="s2">, but constructed name </span><span class="si">{}</span><span class="s2"> is already in  line list.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">new_time_period_number</span><span class="p">,</span> <span class="n">orig_line_name</span><span class="p">,</span> <span class="n">new_tp_line_name</span>
+            <span class="p">)</span>
+            <span class="n">WrangerLogger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="c1"># copy to a new line and add it to list of lines to add</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">line_properties</span><span class="p">[</span><span class="n">new_tp_line_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">line_properties</span><span class="p">[</span><span class="n">orig_line_name</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shapes</span><span class="p">[</span><span class="n">new_tp_line_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shapes</span><span class="p">[</span><span class="n">orig_line_name</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">line_properties</span><span class="p">[</span><span class="n">new_tp_line_name</span><span class="p">][</span><span class="s2">&quot;NAME&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_tp_line_name</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove entries that aren&#39;t for this time period from the new line&#39;s properties list.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">this_time_period_properties_list</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">p</span> <span class="o">+</span> <span class="s2">&quot;[&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">new_time_period_number</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;]&quot;</span>
+            <span class="c1">##todo parameterize all time period specific variables</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;HEADWAY&quot;</span><span class="p">,</span> <span class="s2">&quot;FREQ&quot;</span><span class="p">]</span>
+        <span class="p">]</span>
+
+        <span class="n">not_this_tp_properties_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">time_period_properties_list</span><span class="p">)</span>
+            <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">this_time_period_properties_list</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">not_this_tp_properties_list</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">line_properties</span><span class="p">[</span><span class="n">new_tp_line_name</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove entries for time period from the original line&#39;s properties list.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">this_time_period_properties_list</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">line_properties</span><span class="p">[</span><span class="n">orig_line_name</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add new line to list of lines to add.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">WranglerLogger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">&quot;Adding new time period </span><span class="si">{}</span><span class="s2"> for line </span><span class="si">{}</span><span class="s2"> as </span><span class="si">{}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">new_time_period_number</span><span class="p">,</span> <span class="n">orig_line_name</span><span class="p">,</span> <span class="n">new_tp_line_name</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_tp_line_name</span></div>
+
+<div class="viewcode-block" id="CubeTransit.create_update_route_card_dict"><a class="viewcode-back" href="../../_generated/lasso.CubeTransit.html#lasso.CubeTransit.create_update_route_card_dict">[docs]</a>    <span class="k">def</span> <span class="nf">create_update_route_card_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">updated_properties_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a project card change formatted dictionary for updating</span>
+<span class="sd">        the line.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            line: name of line that is being updated</span>
+<span class="sd">            updated_properties_dict: dictionary of attributes to update as</span>
+<span class="sd">                &#39;property&#39;: &lt;property name&gt;,</span>
+<span class="sd">                &#39;set&#39;: &lt;new property value&gt;</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A project card change-formatted dictionary for the attribute update.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">base_start_time_str</span><span class="p">,</span> <span class="n">base_end_time_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_start_end_times</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">line_properties</span><span class="p">[</span><span class="n">line</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="n">update_card_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;category&quot;</span><span class="p">:</span> <span class="s2">&quot;Transit Service Property Change&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;facility&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;route_id&quot;</span><span class="p">:</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="s2">&quot;direction_id&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+                <span class="s2">&quot;start_time&quot;</span><span class="p">:</span> <span class="n">base_start_time_str</span><span class="p">,</span>
+                <span class="s2">&quot;end_time&quot;</span><span class="p">:</span> <span class="n">base_end_time_str</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="n">updated_properties_dict</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">WranglerLogger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">&quot;Updating </span><span class="si">{}</span><span class="s2"> route to changes:</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">update_card_dict</span><span class="p">))</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">update_card_dict</span></div>
+
+<div class="viewcode-block" id="CubeTransit.create_delete_route_card_dict"><a class="viewcode-back" href="../../_generated/lasso.CubeTransit.html#lasso.CubeTransit.create_delete_route_card_dict">[docs]</a>    <span class="k">def</span> <span class="nf">create_delete_route_card_dict</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">base_transit_line_properties_dict</span><span class="p">:</span> <span class="nb">dict</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a project card change formatted dictionary for deleting a line.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            line: name of line that is being deleted</span>
+<span class="sd">            base_transit_line_properties_dict: dictionary of cube-style</span>
+<span class="sd">                attribute values in order to find time periods and</span>
+<span class="sd">                start and end times.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A project card change-formatted dictionary for the route deletion.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">base_start_time_str</span><span class="p">,</span> <span class="n">base_end_time_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_start_end_times</span><span class="p">(</span>
+            <span class="n">base_transit_line_properties_dict</span>
+        <span class="p">)</span>
+
+        <span class="n">delete_card_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;category&quot;</span><span class="p">:</span> <span class="s2">&quot;Delete Transit Service&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;facility&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;route_id&quot;</span><span class="p">:</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="s2">&quot;direction_id&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+                <span class="s2">&quot;start_time&quot;</span><span class="p">:</span> <span class="n">base_start_time_str</span><span class="p">,</span>
+                <span class="s2">&quot;end_time&quot;</span><span class="p">:</span> <span class="n">base_end_time_str</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">}</span>
+        <span class="n">WranglerLogger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">&quot;Deleting </span><span class="si">{}</span><span class="s2"> route to changes:</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">delete_card_dict</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">delete_card_dict</span></div>
+
+<div class="viewcode-block" id="CubeTransit.create_add_route_card_dict"><a class="viewcode-back" href="../../_generated/lasso.CubeTransit.html#lasso.CubeTransit.create_add_route_card_dict">[docs]</a>    <span class="k">def</span> <span class="nf">create_add_route_card_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a project card change formatted dictionary for adding</span>
+<span class="sd">        a route based on the information in self.route_properties for</span>
+<span class="sd">        the line.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            line: name of line that is being updated</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A project card change-formatted dictionary for the route addition.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">start_time_str</span><span class="p">,</span> <span class="n">end_time_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_start_end_times</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">line_properties</span><span class="p">[</span><span class="n">line</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="n">standard_properties</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cube_properties_to_standard_properties</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">line_properties</span><span class="p">[</span><span class="n">line</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="n">routing_properties</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;property&quot;</span><span class="p">:</span> <span class="s2">&quot;routing&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;set&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">shapes</span><span class="p">[</span><span class="n">line</span><span class="p">][</span><span class="s2">&quot;node&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+        <span class="p">}</span>
+
+        <span class="n">add_card_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;category&quot;</span><span class="p">:</span> <span class="s2">&quot;New Transit Service&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;facility&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;route_id&quot;</span><span class="p">:</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="s2">&quot;direction_id&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+                <span class="s2">&quot;start_time&quot;</span><span class="p">:</span> <span class="n">start_time_str</span><span class="p">,</span>
+                <span class="s2">&quot;end_time&quot;</span><span class="p">:</span> <span class="n">end_time_str</span><span class="p">,</span>
+                <span class="s2">&quot;agency_id&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="n">standard_properties</span> <span class="o">+</span> <span class="p">[</span><span class="n">routing_properties</span><span class="p">],</span>
+        <span class="p">}</span>
+
+        <span class="n">WranglerLogger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">&quot;Adding </span><span class="si">{}</span><span class="s2"> route to changes:</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">add_card_dict</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">add_card_dict</span></div>
+
+<div class="viewcode-block" id="CubeTransit.get_time_period_numbers_from_cube_properties"><a class="viewcode-back" href="../../_generated/lasso.CubeTransit.html#lasso.CubeTransit.get_time_period_numbers_from_cube_properties">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_time_period_numbers_from_cube_properties</span><span class="p">(</span><span class="n">properties_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Finds properties that are associated with time periods and the</span>
+<span class="sd">        returns the numbers in them.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            properties_list (list): list of all properties.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list of strings of the time period numbers found</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">time_periods_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">properties_list</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="s2">&quot;[&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">p</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="s2">&quot;]&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">p</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="n">tp_num</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;[&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">tp_num</span> <span class="ow">and</span> <span class="n">tp_num</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">time_periods_list</span><span class="p">:</span>
+                <span class="n">time_periods_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tp_num</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">time_periods_list</span></div>
+
+<div class="viewcode-block" id="CubeTransit.build_route_name"><a class="viewcode-back" href="../../_generated/lasso.CubeTransit.html#lasso.CubeTransit.build_route_name">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">build_route_name</span><span class="p">(</span>
+        <span class="n">route_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">time_period</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">agency_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">direction_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a route name by contatenating route, time period, agency, and direction</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            route_id: i.e. 452-111</span>
+<span class="sd">            time_period: i.e. pk</span>
+<span class="sd">            direction_id: i.e. 1</span>
+<span class="sd">            agency_id: i.e. 0</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            constructed line_name i.e. &quot;0_452-111_452_pk1&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="nb">str</span><span class="p">(</span><span class="n">agency_id</span><span class="p">)</span>
+            <span class="o">+</span> <span class="s2">&quot;_&quot;</span>
+            <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">route_id</span><span class="p">)</span>
+            <span class="o">+</span> <span class="s2">&quot;_&quot;</span>
+            <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">route_id</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="o">+</span> <span class="s2">&quot;_&quot;</span>
+            <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">time_period</span><span class="p">)</span>
+            <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">direction_id</span><span class="p">)</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="CubeTransit.unpack_route_name"><a class="viewcode-back" href="../../_generated/lasso.CubeTransit.html#lasso.CubeTransit.unpack_route_name">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">unpack_route_name</span><span class="p">(</span><span class="n">line_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Unpacks route name into direction, route, agency, and time period info</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            line_name (str): i.e. &quot;0_452-111_452_pk1&quot;</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            route_id (str): 452-111</span>
+<span class="sd">            time_period (str): i.e. pk</span>
+<span class="sd">            direction_id (str) : i.e. 1</span>
+<span class="sd">            agency_id (str) : i.e. 0</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">line_name</span> <span class="o">=</span> <span class="n">line_name</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span>
+
+        <span class="n">agency_id</span><span class="p">,</span> <span class="n">route_id</span><span class="p">,</span> <span class="n">_rtid</span><span class="p">,</span> <span class="n">_tp_direction</span> <span class="o">=</span> <span class="n">line_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span>
+        <span class="n">time_period</span> <span class="o">=</span> <span class="n">_tp_direction</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">direction_id</span> <span class="o">=</span> <span class="n">_tp_direction</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">route_id</span><span class="p">,</span> <span class="n">time_period</span><span class="p">,</span> <span class="n">agency_id</span><span class="p">,</span> <span class="n">direction_id</span></div>
+
+<div class="viewcode-block" id="CubeTransit.calculate_start_end_times"><a class="viewcode-back" href="../../_generated/lasso.CubeTransit.html#lasso.CubeTransit.calculate_start_end_times">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_start_end_times</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line_properties_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the start and end times of the property change</span>
+<span class="sd">        WARNING: Doesn&#39;t take care of discongruous time periods!!!!</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            line_properties_dict: dictionary of cube-flavor properties for a transit line</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">start_time_m</span> <span class="o">=</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">60</span>
+        <span class="n">end_time_m</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">*</span> <span class="mi">60</span>
+
+        <span class="n">WranglerLogger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">&quot;parameters.time_period_properties_list: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">time_period_properties_list</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">current_cube_time_period_numbers</span> <span class="o">=</span> <span class="n">CubeTransit</span><span class="o">.</span><span class="n">get_time_period_numbers_from_cube_properties</span><span class="p">(</span>
+            <span class="n">line_properties_dict</span>
+        <span class="p">)</span>
+
+        <span class="n">WranglerLogger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">&quot;current_cube_time_period_numbers:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">current_cube_time_period_numbers</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">tp</span> <span class="ow">in</span> <span class="n">current_cube_time_period_numbers</span><span class="p">:</span>
+            <span class="n">time_period_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">cube_time_periods</span><span class="p">[</span><span class="n">tp</span><span class="p">]</span>
+            <span class="n">WranglerLogger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;time_period_name:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time_period_name</span><span class="p">))</span>
+            <span class="n">_start_time</span><span class="p">,</span> <span class="n">_end_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">time_period_to_time</span><span class="p">[</span>
+                <span class="n">time_period_name</span>
+            <span class="p">]</span>
+
+            <span class="c1"># change from &quot;HH:MM&quot; to integer # of seconds</span>
+            <span class="n">_start_time_m</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">_start_time</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span>
+                <span class="n">_start_time</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">_end_time_m</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">_end_time</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span>
+                <span class="n">_end_time</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="p">)</span>
+
+            <span class="c1"># find bounding start and end times</span>
+            <span class="k">if</span> <span class="n">_start_time_m</span> <span class="o">&lt;</span> <span class="n">start_time_m</span><span class="p">:</span>
+                <span class="n">start_time_m</span> <span class="o">=</span> <span class="n">_start_time_m</span>
+            <span class="k">if</span> <span class="n">_end_time_m</span> <span class="o">&gt;</span> <span class="n">end_time_m</span><span class="p">:</span>
+                <span class="n">end_time_m</span> <span class="o">=</span> <span class="n">_end_time_m</span>
+
+        <span class="k">if</span> <span class="n">start_time_m</span> <span class="o">&gt;</span> <span class="n">end_time_m</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Start time (</span><span class="si">{}</span><span class="s2">) is after end time (</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">start_time_m</span><span class="p">,</span> <span class="n">end_time_m</span>
+            <span class="p">)</span>
+            <span class="n">WranglerLogger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="n">start_time_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{:02d}</span><span class="s2">:</span><span class="si">{:02d}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="nb">divmod</span><span class="p">(</span><span class="n">start_time_m</span><span class="p">,</span> <span class="mi">60</span><span class="p">))</span>
+        <span class="n">end_time_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{:02d}</span><span class="s2">:</span><span class="si">{:02d}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="nb">divmod</span><span class="p">(</span><span class="n">end_time_m</span><span class="p">,</span> <span class="mi">60</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">start_time_str</span><span class="p">,</span> <span class="n">end_time_str</span></div>
+
+<div class="viewcode-block" id="CubeTransit.cube_properties_to_standard_properties"><a class="viewcode-back" href="../../_generated/lasso.CubeTransit.html#lasso.CubeTransit.cube_properties_to_standard_properties">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">cube_properties_to_standard_properties</span><span class="p">(</span><span class="n">cube_properties_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converts cube style properties to standard properties.</span>
+
+<span class="sd">        This is most pertinent to time-period specific variables like headway,</span>
+<span class="sd">        and varibles that have stnadard units like headway, which is minutes</span>
+<span class="sd">        in cube and seconds in standard format.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cube_properties_dict: &lt;cube style property name&gt; : &lt;property value&gt;</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A list of dictionaries with values for `&quot;property&quot;: &lt;standard</span>
+<span class="sd">                style property name&gt;, &quot;set&quot; : &lt;property value with correct units&gt;`</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">standard_properties_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">cube_properties_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">change_item</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">i</span> <span class="ow">in</span> <span class="n">k</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;HEADWAY&quot;</span><span class="p">,</span> <span class="s2">&quot;FREQ&quot;</span><span class="p">]):</span>
+                <span class="n">change_item</span><span class="p">[</span><span class="s2">&quot;property&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;headway_secs&quot;</span>
+                <span class="n">change_item</span><span class="p">[</span><span class="s2">&quot;set&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span> <span class="o">*</span> <span class="mi">60</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">change_item</span><span class="p">[</span><span class="s2">&quot;property&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">k</span>
+                <span class="n">change_item</span><span class="p">[</span><span class="s2">&quot;set&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="n">standard_properties_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">change_item</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">standard_properties_list</span></div>
+
+<div class="viewcode-block" id="CubeTransit.evaluate_route_property_differences"><a class="viewcode-back" href="../../_generated/lasso.CubeTransit.html#lasso.CubeTransit.evaluate_route_property_differences">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_route_property_differences</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">properties_build</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">properties_base</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">time_period_number</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">absolute</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">validate_base</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if any values have been updated or added for a specific</span>
+<span class="sd">        route and creates project card entries for each.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            properties_build: ::&lt;property_name&gt;: &lt;property_value&gt;</span>
+<span class="sd">            properties_base: ::&lt;property_name&gt;: &lt;property_value&gt;</span>
+<span class="sd">            time_period_number: time period to evaluate</span>
+<span class="sd">            absolute: if True, will use `set` command rather than a change.  If false, will automatically check the base value.  Note that this only applies to the numeric values of frequency/headway</span>
+<span class="sd">            validate_base: if True, will add the `existing` line in the project card</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            transit_change_list (list): a list of dictionary values suitable for writing to a project card</span>
+<span class="sd">                `{</span>
+<span class="sd">                &#39;property&#39;: &lt;property_name&gt;,</span>
+<span class="sd">                &#39;set&#39;: &lt;set value&gt;,</span>
+<span class="sd">                &#39;change&#39;: &lt;change from existing value&gt;,</span>
+<span class="sd">                &#39;existing&#39;: &lt;existing value to check&gt;,</span>
+<span class="sd">                }`</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Remove time period specific values for things that aren&#39;t part of the time period in question</span>
+        <span class="n">this_time_period_properties_list</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">p</span> <span class="o">+</span> <span class="s2">&quot;[&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">time_period_number</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;]&quot;</span>
+            <span class="c1">##todo parameterize all time period specific variables</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;HEADWAY&quot;</span><span class="p">,</span> <span class="s2">&quot;FREQ&quot;</span><span class="p">]</span>
+        <span class="p">]</span>
+
+        <span class="n">not_this_tp_properties_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">time_period_properties_list</span><span class="p">)</span>
+            <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">this_time_period_properties_list</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">not_this_tp_properties_list</span><span class="p">:</span>
+            <span class="n">properties_build</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">properties_base</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="n">difference_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="nb">set</span><span class="p">(</span><span class="n">properties_build</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="o">^</span> <span class="nb">set</span><span class="p">(</span><span class="n">properties_base</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Iterate through properties list to build difference project card list</span>
+
+        <span class="n">properties_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">difference_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">change_item</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">i</span> <span class="ow">in</span> <span class="n">k</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;HEADWAY&quot;</span><span class="p">,</span> <span class="s2">&quot;FREQ&quot;</span><span class="p">]):</span>
+                <span class="n">change_item</span><span class="p">[</span><span class="s2">&quot;property&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;headway_secs&quot;</span>
+
+                <span class="k">if</span> <span class="n">absolute</span><span class="p">:</span>
+                    <span class="n">change_item</span><span class="p">[</span><span class="s2">&quot;set&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">v</span> <span class="o">*</span> <span class="mi">60</span>
+                    <span class="p">)</span>  <span class="c1"># project cards are in secs, cube is in minutes</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">change_item</span><span class="p">[</span><span class="s2">&quot;change&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">properties_build</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">-</span> <span class="n">properties_base</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+                    <span class="p">)</span> <span class="o">*</span> <span class="mi">60</span>
+                <span class="k">if</span> <span class="n">validate_base</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">absolute</span><span class="p">:</span>
+                    <span class="n">change_item</span><span class="p">[</span><span class="s2">&quot;existing&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">properties_base</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="mi">60</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">change_item</span><span class="p">[</span><span class="s2">&quot;property&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">k</span>
+                <span class="n">change_item</span><span class="p">[</span><span class="s2">&quot;set&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+                <span class="k">if</span> <span class="n">validate_base</span><span class="p">:</span>
+                    <span class="n">change_item</span><span class="p">[</span><span class="s2">&quot;existing&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">properties_base</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+
+            <span class="n">properties_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">change_item</span><span class="p">)</span>
+        <span class="n">WranglerLogger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">&quot;Evaluated Route Changes: </span><span class="se">\n</span><span class="s2"> </span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">properties_list</span><span class="p">))</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">properties_list</span></div>
+
+<div class="viewcode-block" id="CubeTransit.evaluate_route_shape_changes"><a class="viewcode-back" href="../../_generated/lasso.CubeTransit.html#lasso.CubeTransit.evaluate_route_shape_changes">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_route_shape_changes</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">shape_build</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">,</span> <span class="n">shape_base</span><span class="p">:</span> <span class="n">DataFrame</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compares two route shapes and constructs returns list of changes</span>
+<span class="sd">        suitable for a project card.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            shape_build: DataFrame of the build-version of the route shape.</span>
+<span class="sd">            shape_base: dDataFrame of the base-version of the route shape.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List of shape changes formatted as a project card-change dictionary.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">shape_build</span><span class="o">.</span><span class="n">node</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">shape_base</span><span class="o">.</span><span class="n">node</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">shape_change_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">base_node_list</span> <span class="o">=</span> <span class="n">shape_build</span><span class="o">.</span><span class="n">node</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">build_node_list</span> <span class="o">=</span> <span class="n">shape_base</span><span class="o">.</span><span class="n">node</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+        <span class="n">sort_len</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">base_node_list</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">build_node_list</span><span class="p">))</span>
+
+        <span class="n">start_pos</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">end_pos</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sort_len</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">base_node_list</span><span class="p">))</span> <span class="o">|</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">build_node_list</span><span class="p">)):</span>
+                <span class="n">start_pos</span> <span class="o">=</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">1</span>
+                <span class="k">break</span>
+            <span class="k">if</span> <span class="n">base_node_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="n">build_node_list</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                <span class="n">start_pos</span> <span class="o">=</span> <span class="n">i</span>
+                <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+        <span class="n">j</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sort_len</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">base_node_list</span><span class="p">))</span> <span class="o">|</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">build_node_list</span><span class="p">)):</span>
+                <span class="n">end_pos</span> <span class="o">=</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="k">break</span>
+            <span class="k">if</span> <span class="n">base_node_list</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">!=</span> <span class="n">build_node_list</span><span class="p">[</span><span class="n">j</span><span class="p">]:</span>
+                <span class="n">end_pos</span> <span class="o">=</span> <span class="n">j</span>
+                <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">j</span> <span class="o">-=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">start_pos</span> <span class="ow">or</span> <span class="n">end_pos</span><span class="p">:</span>
+            <span class="n">existing</span> <span class="o">=</span> <span class="n">base_node_list</span><span class="p">[</span>
+                <span class="p">(</span><span class="n">start_pos</span> <span class="o">-</span> <span class="mi">2</span> <span class="k">if</span> <span class="n">start_pos</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span> <span class="p">:</span> <span class="p">(</span>
+                    <span class="n">end_pos</span> <span class="o">+</span> <span class="mi">2</span> <span class="k">if</span> <span class="n">end_pos</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">2</span> <span class="k">else</span> <span class="kc">None</span>
+                <span class="p">)</span>
+            <span class="p">]</span>
+            <span class="nb">set</span> <span class="o">=</span> <span class="n">build_node_list</span><span class="p">[</span>
+                <span class="p">(</span><span class="n">start_pos</span> <span class="o">-</span> <span class="mi">2</span> <span class="k">if</span> <span class="n">start_pos</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span> <span class="p">:</span> <span class="p">(</span>
+                    <span class="n">end_pos</span> <span class="o">+</span> <span class="mi">2</span> <span class="k">if</span> <span class="n">end_pos</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">2</span> <span class="k">else</span> <span class="kc">None</span>
+                <span class="p">)</span>
+            <span class="p">]</span>
+
+            <span class="n">shape_change_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">{</span><span class="s2">&quot;property&quot;</span><span class="p">:</span> <span class="s2">&quot;routing&quot;</span><span class="p">,</span> <span class="s2">&quot;existing&quot;</span><span class="p">:</span> <span class="n">existing</span><span class="p">,</span> <span class="s2">&quot;set&quot;</span><span class="p">:</span> <span class="nb">set</span><span class="p">}</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">shape_change_list</span></div></div>
+
+
+<div class="viewcode-block" id="StandardTransit"><a class="viewcode-back" href="../../_generated/lasso.StandardTransit.html#lasso.StandardTransit">[docs]</a><span class="k">class</span> <span class="nc">StandardTransit</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Holds a standard transit feed as a Partridge object and contains</span>
+<span class="sd">    methods to manipulate and translate the GTFS data to MetCouncil&#39;s</span>
+<span class="sd">    Cube Line files.</span>
+
+<span class="sd">    .. highlight:: python</span>
+<span class="sd">    Typical usage example:</span>
+<span class="sd">    ::</span>
+<span class="sd">        cube_transit_net = StandardTransit.read_gtfs(BASE_TRANSIT_DIR)</span>
+<span class="sd">        cube_transit_net.write_as_cube_lin(os.path.join(WRITE_DIR, &quot;outfile.lin&quot;))</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        feed: Partridge Feed object containing read-only access to GTFS feed</span>
+<span class="sd">        parameters (Parameters): Parameters instance containing information</span>
+<span class="sd">            about time periods and variables.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="StandardTransit.__init__"><a class="viewcode-back" href="../../_generated/lasso.StandardTransit.html#lasso.StandardTransit.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ptg_feed</span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Parameters</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ptg_feed: partridge feed object</span>
+<span class="sd">            parameters: dictionary of parameter settings (see Parameters class) or an instance of Parameters</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">feed</span> <span class="o">=</span> <span class="n">ptg_feed</span>
+
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">Parameters</span><span class="p">(</span><span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">Parameters</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">Parameters</span><span class="p">(</span><span class="o">**</span><span class="n">parameters</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Parameters should be a dict or instance of Parameters: found </span><span class="si">{}</span><span class="s2"> which is of type:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">parameters</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">WranglerLogger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="StandardTransit.fromTransitNetwork"><a class="viewcode-back" href="../../_generated/lasso.StandardTransit.html#lasso.StandardTransit.fromTransitNetwork">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">fromTransitNetwork</span><span class="p">(</span>
+        <span class="n">transit_network_object</span><span class="p">:</span> <span class="n">TransitNetwork</span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Parameters</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        RoadwayNetwork to ModelRoadwayNetwork</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            transit_network_object: Reference to an instance of TransitNetwork.</span>
+<span class="sd">            parameters: dictionary of parameter settings (see Parameters class) or an instance of Parameters. If not provided will</span>
+<span class="sd">                use default parameters.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            StandardTransit</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">StandardTransit</span><span class="p">(</span><span class="n">transit_network_object</span><span class="o">.</span><span class="n">feed</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="n">parameters</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="StandardTransit.read_gtfs"><a class="viewcode-back" href="../../_generated/lasso.StandardTransit.html#lasso.StandardTransit.read_gtfs">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">read_gtfs</span><span class="p">(</span><span class="n">gtfs_feed_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Parameters</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reads GTFS files from a directory and returns a StandardTransit</span>
+<span class="sd">        instance.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            gtfs_feed_dir: location of the GTFS files</span>
+<span class="sd">            parameters: dictionary of parameter settings (see Parameters class) or an instance of Parameters. If not provided will</span>
+<span class="sd">                use default parameters.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            StandardTransit instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">StandardTransit</span><span class="p">(</span><span class="n">ptg</span><span class="o">.</span><span class="n">load_feed</span><span class="p">(</span><span class="n">gtfs_feed_dir</span><span class="p">),</span> <span class="n">parameters</span><span class="o">=</span><span class="n">parameters</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="StandardTransit.write_as_cube_lin"><a class="viewcode-back" href="../../_generated/lasso.StandardTransit.html#lasso.StandardTransit.write_as_cube_lin">[docs]</a>    <span class="k">def</span> <span class="nf">write_as_cube_lin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outpath</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Writes the gtfs feed as a cube line file after</span>
+<span class="sd">        converting gtfs properties to MetCouncil cube properties.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            outpath: File location for output cube line file.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">outpath</span><span class="p">:</span>
+            <span class="n">outpath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">scratch_location</span><span class="p">,</span> <span class="s2">&quot;outtransit.lin&quot;</span><span class="p">)</span>
+        <span class="n">trip_cube_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">route_properties_gtfs_to_cube</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="n">trip_cube_df</span><span class="p">[</span><span class="s2">&quot;LIN&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">trip_cube_df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cube_format</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">l</span> <span class="o">=</span> <span class="n">trip_cube_df</span><span class="p">[</span><span class="s2">&quot;LIN&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">outpath</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">l</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="StandardTransit.route_properties_gtfs_to_cube"><a class="viewcode-back" href="../../_generated/lasso.StandardTransit.html#lasso.StandardTransit.route_properties_gtfs_to_cube">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">route_properties_gtfs_to_cube</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Prepare gtfs for cube lin file.</span>
+
+<span class="sd">        Does the following operations:</span>
+<span class="sd">        1. Combines route, frequency, trip, and shape information</span>
+<span class="sd">        2. Converts time of day to time periods</span>
+<span class="sd">        3. Calculates cube route name from gtfs route name and properties</span>
+<span class="sd">        4. Assigns a cube-appropriate mode number</span>
+<span class="sd">        5. Assigns a cube-appropriate operator number</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            trip_df (DataFrame): DataFrame of trips with cube-appropriate values for:</span>
+<span class="sd">                - NAME</span>
+<span class="sd">                - ONEWAY</span>
+<span class="sd">                - OPERATOR</span>
+<span class="sd">                - MODE</span>
+<span class="sd">                - HEADWAY</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">WranglerLogger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;Converting GTFS Standard Properties to MetCouncil&#39;s Cube Standard&quot;</span>
+        <span class="p">)</span>
+        <span class="n">metro_operator_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;0&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+            <span class="s2">&quot;1&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+            <span class="s2">&quot;2&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+            <span class="s2">&quot;3&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+            <span class="s2">&quot;4&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="s2">&quot;5&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+            <span class="s2">&quot;6&quot;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>
+            <span class="s2">&quot;7&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;8&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;9&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+            <span class="s2">&quot;10&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+            <span class="s2">&quot;11&quot;</span><span class="p">:</span> <span class="mi">9</span><span class="p">,</span>
+            <span class="s2">&quot;12&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+            <span class="s2">&quot;13&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+            <span class="s2">&quot;14&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+            <span class="s2">&quot;15&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="n">shape_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">shapes</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">trip_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">trips</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add information from: routes, frequencies, and routetype to trips_df</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">trip_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">trip_df</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">routes</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s2">&quot;route_id&quot;</span><span class="p">)</span>
+        <span class="n">trip_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">trip_df</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">frequencies</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s2">&quot;trip_id&quot;</span><span class="p">)</span>
+
+        <span class="n">trip_df</span><span class="p">[</span><span class="s2">&quot;tod_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">trip_df</span><span class="o">.</span><span class="n">start_time</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_to_cube_time_period</span><span class="p">)</span>
+        <span class="n">inv_cube_time_periods_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">v</span><span class="p">:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">cube_time_periods</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">}</span>
+        <span class="n">trip_df</span><span class="p">[</span><span class="s2">&quot;tod_num&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">trip_df</span><span class="o">.</span><span class="n">tod_name</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">inv_cube_time_periods_map</span><span class="p">)</span>
+        <span class="n">trip_df</span><span class="p">[</span><span class="s2">&quot;tod_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">trip_df</span><span class="o">.</span><span class="n">tod_name</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">cube_time_periods_name</span>
+        <span class="p">)</span>
+
+        <span class="n">trip_df</span><span class="p">[</span><span class="s2">&quot;NAME&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">trip_df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">agency_id</span>
+            <span class="o">+</span> <span class="s2">&quot;_&quot;</span>
+            <span class="o">+</span> <span class="n">x</span><span class="o">.</span><span class="n">route_id</span>
+            <span class="o">+</span> <span class="s2">&quot;_&quot;</span>
+            <span class="o">+</span> <span class="n">x</span><span class="o">.</span><span class="n">route_short_name</span>
+            <span class="o">+</span> <span class="s2">&quot;_&quot;</span>
+            <span class="o">+</span> <span class="n">x</span><span class="o">.</span><span class="n">tod_name</span>
+            <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">direction_id</span><span class="p">),</span>
+            <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">trip_df</span><span class="p">[</span><span class="s2">&quot;LONGNAME&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">trip_df</span><span class="p">[</span><span class="s2">&quot;route_long_name&quot;</span><span class="p">]</span>
+        <span class="n">trip_df</span><span class="p">[</span><span class="s2">&quot;HEADWAY&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">trip_df</span><span class="p">[</span><span class="s2">&quot;headway_secs&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">60</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">trip_df</span><span class="p">[</span><span class="s2">&quot;MODE&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">trip_df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calculate_cube_mode</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">trip_df</span><span class="p">[</span><span class="s2">&quot;ONEWAY&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;T&quot;</span>
+        <span class="n">trip_df</span><span class="p">[</span><span class="s2">&quot;OPERATOR&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">trip_df</span><span class="p">[</span><span class="s2">&quot;agency_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">metro_operator_dict</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">trip_df</span></div>
+
+<div class="viewcode-block" id="StandardTransit.calculate_cube_mode"><a class="viewcode-back" href="../../_generated/lasso.StandardTransit.html#lasso.StandardTransit.calculate_cube_mode">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_cube_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Assigns a cube mode number by following logic.</span>
+
+<span class="sd">        For rail, uses GTFS route_type variable:</span>
+<span class="sd">        https://developers.google.com/transit/gtfs/reference</span>
+
+<span class="sd">        ::</span>
+<span class="sd">            #             route_type : cube_mode</span>
+<span class="sd">            route_type_to_cube_mode = {0: 8, # Tram, Streetcar, Light rail</span>
+<span class="sd">                                       3: 0, # Bus; further disaggregated for cube</span>
+<span class="sd">                                       2: 9} # Rail</span>
+
+<span class="sd">        For buses, uses route id numbers and route name to find</span>
+<span class="sd">        express and suburban buses  as follows:</span>
+
+<span class="sd">        ::</span>
+<span class="sd">            if not cube_mode:</span>
+<span class="sd">                if &#39;express&#39; in row[&#39;LONGNAME&#39;].lower():</span>
+<span class="sd">                    cube_mode = 7  # Express</span>
+<span class="sd">                elif int(row[&#39;route_id&#39;].split(&quot;-&quot;)[0]) &gt; 99:</span>
+<span class="sd">                    cube_mode = 6  # Suburban Local</span>
+<span class="sd">                else:</span>
+<span class="sd">                    cube_mode = 5  # Urban Local</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            row: A DataFrame row with route_type, route_long_name, and route_id</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            cube mode number</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">#                 route_type : cube_mode</span>
+        <span class="n">route_type_to_cube_mode</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="mi">0</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>  <span class="c1"># Tram, Streetcar, Light rail</span>
+            <span class="mi">3</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>  <span class="c1"># Bus; further disaggregated for cube</span>
+            <span class="mi">2</span><span class="p">:</span> <span class="mi">9</span><span class="p">,</span>
+        <span class="p">}</span>  <span class="c1"># Rail</span>
+
+        <span class="n">cube_mode</span> <span class="o">=</span> <span class="n">route_type_to_cube_mode</span><span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;route_type&quot;</span><span class="p">]]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">cube_mode</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;express&quot;</span> <span class="ow">in</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;route_long_name&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                <span class="n">cube_mode</span> <span class="o">=</span> <span class="mi">7</span>  <span class="c1"># Express</span>
+            <span class="k">elif</span> <span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;route_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">99</span><span class="p">:</span>
+                <span class="n">cube_mode</span> <span class="o">=</span> <span class="mi">6</span>  <span class="c1"># Suburban Local</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">cube_mode</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># Urban Local</span>
+
+        <span class="k">return</span> <span class="n">cube_mode</span></div>
+
+<div class="viewcode-block" id="StandardTransit.time_to_cube_time_period"><a class="viewcode-back" href="../../_generated/lasso.StandardTransit.html#lasso.StandardTransit.time_to_cube_time_period">[docs]</a>    <span class="k">def</span> <span class="nf">time_to_cube_time_period</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">start_time_secs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">as_str</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converts seconds from midnight to the cube time period.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            start_time_secs: start time for transit trip in seconds</span>
+<span class="sd">                from midnight</span>
+<span class="sd">            as_str: if True, returns the time period as a string,</span>
+<span class="sd">                otherwise returns a numeric time period</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            this_tp_num: if as_str is False, returns the numeric</span>
+<span class="sd">                time period</span>
+<span class="sd">            this_tp: if as_str is True, returns the Cube time period</span>
+<span class="sd">                name abbreviation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">hhmmss_to_datetime</span><span class="p">,</span> <span class="n">secs_to_datetime</span>
+
+        <span class="c1"># set initial time as the time that spans midnight</span>
+
+        <span class="n">start_time_dt</span> <span class="o">=</span> <span class="n">secs_to_datetime</span><span class="p">(</span><span class="n">start_time_secs</span><span class="p">)</span>
+
+        <span class="c1"># set initial time as the time that spans midnight</span>
+        <span class="n">this_tp</span> <span class="o">=</span> <span class="s2">&quot;NA&quot;</span>
+        <span class="k">for</span> <span class="n">tp_name</span><span class="p">,</span> <span class="n">_times</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">time_period_to_time</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">_start_time</span><span class="p">,</span> <span class="n">_end_time</span> <span class="o">=</span> <span class="n">_times</span>
+            <span class="n">_dt_start_time</span> <span class="o">=</span> <span class="n">hhmmss_to_datetime</span><span class="p">(</span><span class="n">_start_time</span><span class="p">)</span>
+            <span class="n">_dt_end_time</span> <span class="o">=</span> <span class="n">hhmmss_to_datetime</span><span class="p">(</span><span class="n">_end_time</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">_dt_start_time</span> <span class="o">&gt;</span> <span class="n">_dt_end_time</span><span class="p">:</span>
+                <span class="n">this_tp</span> <span class="o">=</span> <span class="n">tp_name</span>
+                <span class="k">break</span>
+
+        <span class="k">for</span> <span class="n">tp_name</span><span class="p">,</span> <span class="n">_times</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">time_period_to_time</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">_start_time</span><span class="p">,</span> <span class="n">_end_time</span> <span class="o">=</span> <span class="n">_times</span>
+            <span class="n">_dt_start_time</span> <span class="o">=</span> <span class="n">hhmmss_to_datetime</span><span class="p">(</span><span class="n">_start_time</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">start_time_dt</span> <span class="o">&gt;=</span> <span class="n">_dt_start_time</span><span class="p">:</span>
+                <span class="n">this_time</span> <span class="o">=</span> <span class="n">_dt_start_time</span>
+                <span class="n">this_tp</span> <span class="o">=</span> <span class="n">tp_name</span>
+
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="n">WranglerLogger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="s2">&quot;Finding Cube Time Period from Start Time: </span><span class="se">\</span>
+<span class="s2">                </span><span class="se">\n</span><span class="s2">  - start_time_sec: </span><span class="si">{}</span><span class="s2"> </span><span class="se">\</span>
+<span class="s2">                </span><span class="se">\n</span><span class="s2">  - start_time_dt: </span><span class="si">{}</span><span class="s2"> </span><span class="se">\</span>
+<span class="s2">                </span><span class="se">\n</span><span class="s2">  - this_tp: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">start_time_secs</span><span class="p">,</span> <span class="n">start_time_dt</span><span class="p">,</span> <span class="n">this_tp</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">as_str</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">this_tp</span>
+
+        <span class="n">name_to_num</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">cube_time_periods</span><span class="o">.</span><span class="n">items</span><span class="p">}</span>
+        <span class="n">this_tp_num</span> <span class="o">=</span> <span class="n">name_to_num</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">this_tp</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">this_tp_num</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Cannot find time period number in </span><span class="si">{}</span><span class="s2"> for time period name: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">name_to_num</span><span class="p">,</span> <span class="n">this_tp</span>
+            <span class="p">)</span>
+            <span class="n">WranglerLogger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">this_tp_num</span></div>
+
+<div class="viewcode-block" id="StandardTransit.shape_gtfs_to_cube"><a class="viewcode-back" href="../../_generated/lasso.StandardTransit.html#lasso.StandardTransit.shape_gtfs_to_cube">[docs]</a>    <span class="k">def</span> <span class="nf">shape_gtfs_to_cube</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a list of nodes that for the route in appropriate</span>
+<span class="sd">        cube format.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            row: DataFrame row with both shape_id and trip_id</span>
+
+<span class="sd">        Returns: a string representation of the node list</span>
+<span class="sd">            for a route in cube format.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">trip_stop_times_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">stop_times</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">trip_stop_times_df</span> <span class="o">=</span> <span class="n">trip_stop_times_df</span><span class="p">[</span>
+            <span class="n">trip_stop_times_df</span><span class="o">.</span><span class="n">trip_id</span> <span class="o">==</span> <span class="n">row</span><span class="o">.</span><span class="n">trip_id</span>
+        <span class="p">]</span>
+
+        <span class="n">trip_node_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">shapes</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">trip_node_df</span> <span class="o">=</span> <span class="n">trip_node_df</span><span class="p">[</span><span class="n">trip_node_df</span><span class="o">.</span><span class="n">shape_id</span> <span class="o">==</span> <span class="n">row</span><span class="o">.</span><span class="n">shape_id</span><span class="p">]</span>
+
+        <span class="n">trip_stop_times_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+            <span class="n">trip_stop_times_df</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">stops</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s2">&quot;stop_id&quot;</span>
+        <span class="p">)</span>
+
+        <span class="n">stop_node_id_list</span> <span class="o">=</span> <span class="n">trip_stop_times_df</span><span class="p">[</span><span class="s2">&quot;model_node_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">trip_node_list</span> <span class="o">=</span> <span class="n">trip_node_df</span><span class="p">[</span><span class="s2">&quot;shape_model_node_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+        <span class="c1"># node list</span>
+        <span class="n">node_list_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">nodeIdx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">trip_node_list</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">trip_node_list</span><span class="p">[</span><span class="n">nodeIdx</span><span class="p">]</span> <span class="ow">in</span> <span class="n">stop_node_id_list</span><span class="p">:</span>
+                <span class="n">node_list_str</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">trip_node_list</span><span class="p">[</span><span class="n">nodeIdx</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">nodeIdx</span> <span class="o">&lt;</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">trip_node_list</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+                    <span class="n">node_list_str</span> <span class="o">+=</span> <span class="s2">&quot;,&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">node_list_str</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> -</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">trip_node_list</span><span class="p">[</span><span class="n">nodeIdx</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">nodeIdx</span> <span class="o">&lt;</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">trip_node_list</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+                    <span class="n">node_list_str</span> <span class="o">+=</span> <span class="s2">&quot;,&quot;</span>
+
+        <span class="k">return</span> <span class="n">node_list_str</span></div>
+
+<div class="viewcode-block" id="StandardTransit.cube_format"><a class="viewcode-back" href="../../_generated/lasso.StandardTransit.html#lasso.StandardTransit.cube_format">[docs]</a>    <span class="k">def</span> <span class="nf">cube_format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a string represnting the route in cube line file notation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            row: row of a DataFrame representing a cube-formatted trip, with the Attributes</span>
+<span class="sd">                trip_id, shape_id, NAME, LONGNAME, tod, HEADWAY, MODE, ONEWAY, OPERATOR</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            string representation of route in cube line file notation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">s</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">LINE NAME=&quot;</span><span class="si">{}</span><span class="s1">&quot;,&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">NAME</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> LONGNAME=&quot;</span><span class="si">{}</span><span class="s1">&quot;,&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">LONGNAME</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> HEADWAY[</span><span class="si">{}</span><span class="s2">]=</span><span class="si">{}</span><span class="s2">,&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">tod_num</span><span class="p">,</span> <span class="n">row</span><span class="o">.</span><span class="n">HEADWAY</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> MODE=</span><span class="si">{}</span><span class="s2">,&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">MODE</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> ONEWAY=</span><span class="si">{}</span><span class="s2">,&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">ONEWAY</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> OPERATOR=</span><span class="si">{}</span><span class="s2">,&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">OPERATOR</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> NODES=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape_gtfs_to_cube</span><span class="p">(</span><span class="n">row</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">s</span></div></div>
+
+
+<span class="k">class</span> <span class="nc">CubeTransformer</span><span class="p">(</span><span class="n">Transformer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A lark-parsing Transformer which transforms the parse-tree to</span>
+<span class="sd">    a dictionary.</span>
+
+<span class="sd">    .. highlight:: python</span>
+<span class="sd">    Typical usage example:</span>
+<span class="sd">    ::</span>
+<span class="sd">        transformed_tree_data = CubeTransformer().transform(parse_tree)</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        line_order (int): a dynamic counter to hold the order of the nodes within</span>
+<span class="sd">            a route shape</span>
+<span class="sd">        lines_list (list): a list of the line names</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">line_order</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lines_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="nf">lines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+        <span class="c1"># WranglerLogger.debug(&quot;lines: \n {}&quot;.format(line))</span>
+
+        <span class="c1"># This MUST be a tuple because it returns to start in the tree</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">line</span><span class="p">}</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;lines&quot;</span><span class="p">,</span> <span class="n">lines</span><span class="p">)</span>
+
+    <span class="nd">@v_args</span><span class="p">(</span><span class="n">inline</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">program_type_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">PROGRAM_TYPE</span><span class="p">,</span> <span class="n">whitespace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># WranglerLogger.debug(&quot;program_type_line:{}&quot;.format(PROGRAM_TYPE))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">program_type</span> <span class="o">=</span> <span class="n">PROGRAM_TYPE</span><span class="o">.</span><span class="n">value</span>
+
+        <span class="c1"># This MUST be a tuple because it returns to start  in the tree</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;program_type&quot;</span><span class="p">,</span> <span class="n">PROGRAM_TYPE</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="nd">@v_args</span><span class="p">(</span><span class="n">inline</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lin_attributes</span><span class="p">,</span> <span class="n">nodes</span><span class="p">):</span>
+        <span class="c1"># WranglerLogger.debug(&quot;line...attributes:\n  {}&quot;.format(lin_attributes))</span>
+        <span class="c1"># WranglerLogger.debug(&quot;line...nodes:\n  {}&quot;.format(nodes))</span>
+        <span class="n">lin_name</span> <span class="o">=</span> <span class="n">lin_attributes</span><span class="p">[</span><span class="s2">&quot;NAME&quot;</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">line_order</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># WranglerLogger.debug(&quot;parsing: {}&quot;.format(lin_name))</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">lin_name</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;line_properties&quot;</span><span class="p">:</span> <span class="n">lin_attributes</span><span class="p">,</span> <span class="s2">&quot;line_shape&quot;</span><span class="p">:</span> <span class="n">nodes</span><span class="p">})</span>
+
+    <span class="nd">@v_args</span><span class="p">(</span><span class="n">inline</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">lin_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">lin_attr</span><span class="p">):</span>
+        <span class="n">lin_attr</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="n">lin_attr</span><span class="p">}</span>
+        <span class="c1"># WranglerLogger.debug(&quot;lin_attributes:  {}&quot;.format(lin_attr))</span>
+        <span class="k">return</span> <span class="n">lin_attr</span>
+
+    <span class="nd">@v_args</span><span class="p">(</span><span class="n">inline</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">lin_attr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lin_attr_name</span><span class="p">,</span> <span class="n">attr_value</span><span class="p">,</span> <span class="n">SEMICOLON_COMMENT</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># WranglerLogger.debug(&quot;lin_attr {}:  {}&quot;.format(lin_attr_name, attr_value))</span>
+        <span class="k">return</span> <span class="n">lin_attr_name</span><span class="p">,</span> <span class="n">attr_value</span>
+
+    <span class="k">def</span> <span class="nf">lin_attr_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+        <span class="n">attr_name</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+        <span class="c1"># WranglerLogger.debug(&quot;.......args {}&quot;.format(args))</span>
+        <span class="k">if</span> <span class="n">attr_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;USERA&quot;</span><span class="p">,</span> <span class="s2">&quot;FREQ&quot;</span><span class="p">,</span> <span class="s2">&quot;HEADWAY&quot;</span><span class="p">]:</span>
+            <span class="n">attr_name</span> <span class="o">=</span> <span class="n">attr_name</span> <span class="o">+</span> <span class="s2">&quot;[&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;]&quot;</span>
+        <span class="k">return</span> <span class="n">attr_name</span>
+
+    <span class="k">def</span> <span class="nf">attr_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr_value</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">attr_value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">attr_value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+
+    <span class="k">def</span> <span class="nf">nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lin_node</span><span class="p">):</span>
+        <span class="n">lin_node</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">lin_node</span><span class="p">)</span>
+        <span class="c1"># WranglerLogger.debug(&quot;nodes:\n {}&quot;.format(lin_node))</span>
+
+        <span class="k">return</span> <span class="n">lin_node</span>
+
+    <span class="nd">@v_args</span><span class="p">(</span><span class="n">inline</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">lin_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">NODE_NUM</span><span class="p">,</span> <span class="n">SEMICOLON_COMMENT</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">lin_nodeattr</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">line_order</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">NODE_NUM</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;node_id&quot;</span><span class="p">:</span> <span class="nb">abs</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="s2">&quot;node&quot;</span><span class="p">:</span> <span class="n">n</span><span class="p">,</span> <span class="s2">&quot;stop&quot;</span><span class="p">:</span> <span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;order&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_order</span><span class="p">}</span>
+
+    <span class="n">start</span> <span class="o">=</span> <span class="nb">dict</span>
+
+
+<span class="n">TRANSIT_LINE_FILE_GRAMMAR</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;&quot;&quot;</span>
+
+<span class="s2">start             : program_type_line? lines</span>
+<span class="s2">WHITESPACE        : /[ \t\r\n]/+</span>
+<span class="s2">STRING            : /(&quot;(?!&quot;&quot;).*?(?&lt;!\\)(\\\\)*?&quot;|&#39;(?!&#39;&#39;).*?(?&lt;!\\)(\\\\)*?&#39;)/i</span>
+<span class="s2">SEMICOLON_COMMENT : /;[^\n]*/</span>
+<span class="s2">BOOLEAN           : &quot;T&quot;i | &quot;F&quot;i</span>
+<span class="s2">program_type_line : &quot;;;&lt;&lt;&quot; PROGRAM_TYPE &quot;&gt;&gt;&lt;&lt;LINE&gt;&gt;;;&quot; WHITESPACE?</span>
+<span class="s2">PROGRAM_TYPE      : &quot;PT&quot; | &quot;TRNBUILD&quot;</span>
+
+<span class="s2">lines             : line*</span>
+<span class="s2">line              : &quot;LINE&quot; lin_attributes nodes</span>
+
+<span class="s2">lin_attributes    : lin_attr+</span>
+<span class="s2">lin_attr          : lin_attr_name &quot;=&quot; attr_value &quot;,&quot; SEMICOLON_COMMENT*</span>
+<span class="s2">TIME_PERIOD       : &quot;1&quot;..&quot;5&quot;</span>
+<span class="s2">!lin_attr_name     : &quot;allstops&quot;i</span>
+<span class="s2">                    | &quot;color&quot;i</span>
+<span class="s2">                    | (&quot;freq&quot;i &quot;[&quot; TIME_PERIOD &quot;]&quot;)</span>
+<span class="s2">                    | (&quot;headway&quot;i &quot;[&quot; TIME_PERIOD &quot;]&quot;)</span>
+<span class="s2">                    | &quot;mode&quot;i</span>
+<span class="s2">                    | &quot;name&quot;i</span>
+<span class="s2">                    | &quot;oneway&quot;i</span>
+<span class="s2">                    | &quot;owner&quot;i</span>
+<span class="s2">                    | &quot;runtime&quot;i</span>
+<span class="s2">                    | &quot;timefac&quot;i</span>
+<span class="s2">                    | &quot;xyspeed&quot;i</span>
+<span class="s2">                    | &quot;longname&quot;i</span>
+<span class="s2">                    | &quot;shortname&quot;i</span>
+<span class="s2">                    | (&quot;usera&quot;i TIME_PERIOD)</span>
+<span class="s2">                    | (&quot;usern2&quot;i)</span>
+<span class="s2">                    | &quot;circular&quot;i</span>
+<span class="s2">                    | &quot;vehicletype&quot;i</span>
+<span class="s2">                    | &quot;operator&quot;i</span>
+<span class="s2">                    | &quot;faresystem&quot;i</span>
+
+<span class="s2">attr_value        : BOOLEAN | STRING | SIGNED_INT</span>
+
+<span class="s2">nodes             : lin_node+</span>
+<span class="s2">lin_node          : (&quot;N&quot; | &quot;NODES&quot;)? &quot;=&quot;? NODE_NUM &quot;,&quot;? SEMICOLON_COMMENT? lin_nodeattr*</span>
+<span class="s2">NODE_NUM          : SIGNED_INT</span>
+<span class="s2">lin_nodeattr      : lin_nodeattr_name &quot;=&quot; attr_value &quot;,&quot;? SEMICOLON_COMMENT*</span>
+<span class="s2">!lin_nodeattr_name : &quot;access_c&quot;i</span>
+<span class="s2">                    | &quot;access&quot;i</span>
+<span class="s2">                    | &quot;delay&quot;i</span>
+<span class="s2">                    | &quot;xyspeed&quot;i</span>
+<span class="s2">                    | &quot;timefac&quot;i</span>
+<span class="s2">                    | &quot;nntime&quot;i</span>
+<span class="s2">                    | &quot;time&quot;i</span>
+
+<span class="s2">operator          : SEMICOLON_COMMENT* &quot;OPERATOR&quot; opmode_attr* SEMICOLON_COMMENT*</span>
+<span class="s2">mode              : SEMICOLON_COMMENT* &quot;MODE&quot; opmode_attr* SEMICOLON_COMMENT*</span>
+<span class="s2">opmode_attr       : ( (opmode_attr_name &quot;=&quot; attr_value) &quot;,&quot;?  )</span>
+<span class="s2">opmode_attr_name  : &quot;number&quot; | &quot;name&quot; | &quot;longname&quot;</span>
+
+<span class="si">%i</span><span class="s2">mport common.SIGNED_INT</span>
+<span class="si">%i</span><span class="s2">mport common.WS</span>
+<span class="si">%i</span><span class="s2">gnore WS</span>
+
+<span class="s2">&quot;&quot;&quot;</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2019 Metropolitan Council
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

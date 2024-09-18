@@ -1,0 +1,630 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>lasso.Parameters &mdash; lasso  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="lasso.util" href="lasso.util.html" />
+    <link rel="prev" title="lasso.Project" href="lasso.Project.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> lasso
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../starting.html">Starting Out</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../setup.html">Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../running.html">Running Lasso</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../autodoc.html">Lasso Classes and Functions</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../autodoc.html#base-classes">Base Classes</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="lasso.CubeTransit.html">lasso.CubeTransit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lasso.StandardTransit.html">lasso.StandardTransit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lasso.ModelRoadwayNetwork.html">lasso.ModelRoadwayNetwork</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lasso.Project.html">lasso.Project</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">lasso.Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../autodoc.html#utils-and-functions">Utils and Functions</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">lasso</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../autodoc.html">Lasso Classes and Functions</a> &raquo;</li>
+        
+      <li>lasso.Parameters</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/_generated/lasso.Parameters.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="lasso-parameters">
+<h1>lasso.Parameters<a class="headerlink" href="#lasso-parameters" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="lasso.Parameters">
+<em class="property">class </em><code class="sig-prename descclassname">lasso.</code><code class="sig-name descname">Parameters</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lasso/parameters.html#Parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lasso.Parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class representing all the parameters defining the networks
+including time of day, categories, etc.</p>
+<p>Parameters can be set at runtime by initializing a parameters instance
+with a keyword argument setting the attribute.  Parameters that are
+not explicitly set will use default parameters listed in this class.
+.. highlight:: python
+##TODO potentially split this between several classes.</p>
+<dl>
+<dt>Attr:</dt><dd><dl>
+<dt>time_period_to_time (dict): Maps time period abbreviations used in</dt><dd><p>Cube to time of days used on gtfs and highway network standard
+Default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;AM&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;6:00&quot;</span><span class="p">,</span> <span class="s2">&quot;9:00&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;MD&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;9:00&quot;</span><span class="p">,</span> <span class="s2">&quot;16:00&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;PM&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;16:00&quot;</span><span class="p">,</span> <span class="s2">&quot;19:00&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;NT&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;19:00&quot;</span><span class="p">,</span> <span class="s2">&quot;6:00&quot;</span><span class="p">),</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd>
+<dt>cube_time_periods (dict):  Maps cube time period numbers used in</dt><dd><p>transit line files to the time period abbreviations in time_period_to_time
+dictionary.
+Default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;1&quot;</span><span class="p">:</span> <span class="s2">&quot;AM&quot;</span><span class="p">,</span> <span class="s2">&quot;2&quot;</span><span class="p">:</span> <span class="s2">&quot;MD&quot;</span><span class="p">}</span>
+</pre></div>
+</div>
+</dd>
+<dt>categories (dict): Maps demand category abbreviations to a list of</dt><dd><p>network categories they are allowed to use.
+Default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="c1"># suffix, source (in order of search)</span>
+    <span class="s2">&quot;sov&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;sov&quot;</span><span class="p">,</span> <span class="s2">&quot;default&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;hov2&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;hov2&quot;</span><span class="p">,</span> <span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="s2">&quot;sov&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;hov3&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;hov3&quot;</span><span class="p">,</span> <span class="s2">&quot;hov2&quot;</span><span class="p">,</span> <span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="s2">&quot;sov&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;truck&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;trk&quot;</span><span class="p">,</span> <span class="s2">&quot;sov&quot;</span><span class="p">,</span> <span class="s2">&quot;default&quot;</span><span class="p">],</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd>
+<dt>properties_to_split (dict): Dictionary mapping variables in standard</dt><dd><p>roadway network to categories and time periods that need to be
+split out in final model network to get variables like LANES_AM.
+Default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;trn_priority&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;v&quot;</span><span class="p">:</span> <span class="s2">&quot;trn_priority&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;time_periods&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_periods_to_time</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;ttime_assert&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;v&quot;</span><span class="p">:</span> <span class="s2">&quot;ttime_assert&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;time_periods&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_periods_to_time</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;lanes&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;v&quot;</span><span class="p">:</span> <span class="s2">&quot;lanes&quot;</span><span class="p">,</span> <span class="s2">&quot;time_periods&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_periods_to_time</span><span class="p">},</span>
+    <span class="s2">&quot;price&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;v&quot;</span><span class="p">:</span> <span class="s2">&quot;price&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;time_periods&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_periods_to_time</span><span class="p">,</span>
+        <span class="s2">&quot;categories&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">categories</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;access&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;v&quot;</span><span class="p">:</span> <span class="s2">&quot;access&quot;</span><span class="p">,</span> <span class="s2">&quot;time_periods&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_periods_to_time</span><span class="p">},</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd>
+<dt>county_shape (str): File location of shapefile defining counties.</dt><dd><p>Default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sa">r</span><span class="s2">&quot;metcouncil_data/county/cb_2017_us_county_5m.shp&quot;</span>
+</pre></div>
+</div>
+</dd>
+<dt>county_variable_shp (str): Property defining the county n ame in</dt><dd><p>the county_shape file.
+Default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">NAME</span>
+</pre></div>
+</div>
+</dd>
+<dt>lanes_lookup_file (str): Lookup table of number of lanes for different data sources.</dt><dd><p>Default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sa">r</span><span class="s2">&quot;metcouncil_data/lookups/lanes.csv&quot;</span>
+</pre></div>
+</div>
+</dd>
+<dt>centroid_connect_lanes (int): Number of lanes for centroid connectors.</dt><dd><p>Default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">1</span>
+</pre></div>
+</div>
+</dd>
+<dt>mpo_counties (list): list of county names within MPO boundary.</dt><dd><p>Default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
+    <span class="s2">&quot;ANOKA&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DAKOTA&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HENNEPIN&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RAMSEY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SCOTT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;WASHINGTON&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CARVER&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</dd>
+<dt>taz_shape (str):</dt><dd><p>Default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sa">r</span><span class="s2">&quot;metcouncil_data/TAZ/TAZOfficialWCurrentForecasts.shp&quot;</span>
+</pre></div>
+</div>
+</dd>
+<dt>taz_data (str):</dt><dd><p>Default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>??
+</pre></div>
+</div>
+</dd>
+<dt>highest_taz_number (int): highest TAZ number in order to define</dt><dd><p>centroid connectors.
+Default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">3100</span>
+</pre></div>
+</div>
+</dd>
+<dt>output_variables (list): list of variables to output in final model</dt><dd><p>network.
+Default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
+    <span class="s2">&quot;model_link_id&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;A&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;B&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;shstGeometryId&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;distance&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;roadway&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;roadway_class&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;bike_access&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;transit_access&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;walk_access&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;drive_access&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;truck_access&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;trn_priority_AM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;trn_priority_MD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;trn_priority_PM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;trn_priority_NT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ttime_assert_AM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ttime_assert_MD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ttime_assert_PM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ttime_assert_NT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;lanes_AM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;lanes_MD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;lanes_PM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;lanes_NT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;price_sov_AM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;price_hov2_AM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;price_hov3_AM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;price_truck_AM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;price_sov_MD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;price_hov2_MD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;price_hov3_MD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;price_truck_MD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;price_sov_PM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;price_hov2_PM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;price_hov3_PM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;price_truck_PM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;price_sov_NT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;price_hov2_NT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;price_hov3_NT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;price_truck_NT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;roadway_class_idx&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;assign_group&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;access_AM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;access_MD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;access_PM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;access_NT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mpo&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;area_type&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;county&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;centroidconnect&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AADT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;count_year&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;count_AM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;count_MD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;count_PM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;count_NT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;count_daily&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;model_node_id&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;N&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;osm_node_id&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;bike_node&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;transit_node&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;walk_node&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;drive_node&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;geometry&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;X&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Y&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</dd>
+<dt>area_type_shape (str):   Location of shapefile defining area type.</dt><dd><p>Default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sa">r</span><span class="s2">&quot;metcouncil_data/area_type/ThriveMSP2040CommunityDesignation.shp&quot;</span>
+</pre></div>
+</div>
+</dd>
+<dt>area_type_variable_shp (str): property in area_type_shape with area</dt><dd><p>type in it.
+Default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;COMDES2040&quot;</span>
+</pre></div>
+</div>
+</dd>
+<dt>area_type_code_dict (dict): Mapping of the area_type_variable_shp to</dt><dd><p>the area type code used in the MetCouncil cube network.
+Default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="mi">23</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>  <span class="c1"># urban center</span>
+    <span class="mi">24</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="mi">25</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="mi">35</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="mi">36</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="mi">41</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="mi">51</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="mi">52</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="mi">53</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="mi">60</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd>
+<dt>downtown_area_type_shape (str): Location of shapefile defining downtown area type.</dt><dd><p>Default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sa">r</span><span class="s2">&quot;metcouncil_data/area_type/downtownzones_TAZ.shp&quot;</span>
+</pre></div>
+</div>
+</dd>
+<dt>downtown_area_type (int): Area type integer for downtown.</dt><dd><p>Default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">5</span>
+</pre></div>
+</div>
+</dd>
+<dt>mrcc_roadway_class_shape (str): Shapefile of MRCC links with a property</dt><dd><p>associated with roadway class. Default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sa">r</span><span class="s2">&quot;metcouncil_data/mrcc/trans_mrcc_centerlines.shp&quot;</span>
+</pre></div>
+</div>
+</dd>
+<dt>mrcc_roadway_class_variable_shp (str): The property in mrcc_roadway_class_shp</dt><dd><p>associated with roadway class. Default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;ROUTE_SYS&quot;</span>
+</pre></div>
+</div>
+</dd>
+<dt>widot_roadway_class_shape (str): Shapefile of Wisconsin links with a property</dt><dd><p>associated with roadway class. Default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sa">r</span><span class="s2">&quot;metcouncil_data/Wisconsin_Lanes_Counts_Median/WISLR.shp&quot;</span>
+</pre></div>
+</div>
+</dd>
+<dt>widot_roadway_class_variable_shp (str):  The property in widot_roadway_class_shape</dt><dd><p>associated with roadway class.Default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;RDWY_CTGY_&quot;</span>
+</pre></div>
+</div>
+</dd>
+<dt>mndot_count_shape (str):  Shapefile of MnDOT links with a property</dt><dd><p>associated with counts. Default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sa">r</span><span class="s2">&quot;metcouncil_data/count_mn/AADT_2017_Count_Locations.shp&quot;</span>
+</pre></div>
+</div>
+</dd>
+<dt>mndot_count_variable_shp (str): The property in mndot_count_shape</dt><dd><p>associated with counts. Default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;AADT_mn&quot;</span>
+</pre></div>
+</div>
+</dd>
+<dt>widot_count_shape (str): Shapefile of Wisconsin DOT links with a property</dt><dd><p>associated with counts. Default:Default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sa">r</span><span class="s2">&quot;metcouncil_data/Wisconsin_Lanes_Counts_Median/TRADAS_(counts).shp&quot;</span>
+</pre></div>
+</div>
+</dd>
+<dt>widot_count_variable_shp (str): The property in widot_count_shape</dt><dd><p>associated with counts. Default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;AADT_wi&quot;</span>
+</pre></div>
+</div>
+</dd>
+<dt>mrcc_shst_data (str): MnDOT MRCC to Shared Streets crosswalk. Default:</dt><dd><dl class="simple">
+<dt>::</dt><dd><p>r”metcouncil_data/mrcc/mrcc.out.matched.csv”</p>
+</dd>
+</dl>
+</dd>
+<dt>widot_shst_data (str): WisconsinDOT to Shared Streets crosswalk.Default:</dt><dd><dl class="simple">
+<dt>::</dt><dd><p>r”metcouncil_data/Wisconsin_Lanes_Counts_Median/widot.out.matched.geojson”</p>
+</dd>
+</dl>
+</dd>
+<dt>mndot_count_shst_data (str): MetCouncil count data with ShST Default:</dt><dd><dl class="simple">
+<dt>::</dt><dd><p>r”metcouncil_data/count_mn/mn_count_ShSt_API_match.csv”</p>
+</dd>
+</dl>
+</dd>
+<dt>widot_count_shst_data (str): WisconsinDOT count data with ShST Default:</dt><dd><dl class="simple">
+<dt>::</dt><dd><p>r”metcouncil_data/Wisconsin_Lanes_Counts_Median/wi_count_ShSt_API_match.csv”,</p>
+</dd>
+</dl>
+</dd>
+<dt>mrcc_assgngrp_dict (str): Mapping beetween MRCC ROUTE_SYS variable</dt><dd><p>and assignment group. Default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;lookups/mrcc_route_sys_asgngrp_crosswalk.csv&quot;</span>
+</pre></div>
+</div>
+</dd>
+<dt>widot_assgngrp_dict (dict): Mapping beetween Wisconsin DOT <a href="#id1"><span class="problematic" id="id2">RDWY_CTGY_</span></a></dt><dd><p>variable and assignment group. Default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;lookups/widot_ctgy_asgngrp_crosswalk.csv&quot;</span>
+</pre></div>
+</div>
+</dd>
+<dt>osm_assgngrp_dict (dict): Mapping between OSM Roadway variable</dt><dd><p>and assignment group. Default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;lookups/osm_highway_asgngrp_crosswalk.csv&quot;</span>
+</pre></div>
+</div>
+</dd>
+<dt>roadway_class_dict (str):  Mapping between assignment group and</dt><dd><p>roadway class. Default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;lookups/asgngrp_rc_num_crosswalk.csv&quot;</span>
+</pre></div>
+</div>
+</dd>
+<dt>output_epsg (int): EPSG type of geographic projection for output</dt><dd><p>shapefiles. Default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">26915</span>
+</pre></div>
+</div>
+</dd>
+<dt>net_to_dbf (str): Lookup of network variables to DBF compliant</dt><dd><p>lengths. Default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;examples/settings/net_to_dbf.csv&quot;</span>
+</pre></div>
+</div>
+</dd>
+<dt>output_link_shp (str): Output shapefile for roadway links. Default:</dt><dd><dl class="simple">
+<dt>::</dt><dd><p>r”tests/scratch/links.shp”</p>
+</dd>
+</dl>
+</dd>
+<dt>output_node_shp (str):  Output shapefile for roadway nodes. Default:</dt><dd><dl class="simple">
+<dt>::</dt><dd><p>r”tests/scratch/nodes.shp”</p>
+</dd>
+</dl>
+</dd>
+<dt>output_link_csv (str):  Output csv for roadway links. Default:</dt><dd><dl class="simple">
+<dt>::</dt><dd><p>r”tests/scratch/links.csv”</p>
+</dd>
+</dl>
+</dd>
+<dt>output_node_csv (str): Output csv for roadway nodes. Default:</dt><dd><dl class="simple">
+<dt>::</dt><dd><p>r”tests/scratch/nodes.csv”</p>
+</dd>
+</dl>
+</dd>
+<dt>output_link_txt (str): Output fixed format txt for roadway links. Default:</dt><dd><dl class="simple">
+<dt>::</dt><dd><p>r”tests/scratch/links.txt”</p>
+</dd>
+</dl>
+</dd>
+<dt>output_node_txt (str): Output fixed format txt for roadway nodes. Default:</dt><dd><dl class="simple">
+<dt>::</dt><dd><p>r”tests/scratch/nodes.txt”</p>
+</dd>
+</dl>
+</dd>
+<dt>output_link_header_width_txt (str): Header for txt roadway links. Default:</dt><dd><dl class="simple">
+<dt>::</dt><dd><p>r”tests/scratch/links_header_width.txt”</p>
+</dd>
+</dl>
+</dd>
+<dt>output_node_header_width_txt (str): Header for txt for roadway Nodes. Default:</dt><dd><dl class="simple">
+<dt>::</dt><dd><p>r”tests/scratch/nodes_header_width.txt”</p>
+</dd>
+</dl>
+</dd>
+<dt>output_cube_network_script (str): Cube script for importing</dt><dd><p>fixed-format roadway network. Default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sa">r</span><span class="s2">&quot;tests/scratch/make_complete_network_from_fixed_width_file.s</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="lasso.Parameters.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lasso/parameters.html#Parameters.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lasso.Parameters.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Time period and category  splitting info</p>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#lasso.Parameters.__init__" title="lasso.Parameters.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(**kwargs)</p></td>
+<td><p>Time period and category  splitting info</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py attribute">
+<dt id="lasso.Parameters.output_epsg">
+<code class="sig-name descname">output_epsg</code><a class="headerlink" href="#lasso.Parameters.output_epsg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create all the possible headway variable combinations based on the cube time periods setting</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="lasso.Parameters.properties_to_split">
+<code class="sig-name descname">properties_to_split</code><a class="headerlink" href="#lasso.Parameters.properties_to_split" title="Permalink to this definition">¶</a></dt>
+<dd><p>Details for calculating the county based on the centroid of the link.
+The COUNTY_VARIABLE should be the name of a field in shapefile.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="lasso.util.html" class="btn btn-neutral float-right" title="lasso.util" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="lasso.Project.html" class="btn btn-neutral float-left" title="lasso.Project" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2019 Metropolitan Council
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,36 @@
+﻿lasso.CubeTransit
+=================
+
+.. currentmodule:: lasso
+
+.. autoclass:: CubeTransit
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~CubeTransit.__init__
+      ~CubeTransit.add_additional_time_periods
+      ~CubeTransit.add_cube
+      ~CubeTransit.build_route_name
+      ~CubeTransit.calculate_start_end_times
+      ~CubeTransit.create_add_route_card_dict
+      ~CubeTransit.create_delete_route_card_dict
+      ~CubeTransit.create_from_cube
+      ~CubeTransit.create_update_route_card_dict
+      ~CubeTransit.cube_properties_to_standard_properties
+      ~CubeTransit.evaluate_differences
+      ~CubeTransit.evaluate_route_property_differences
+      ~CubeTransit.evaluate_route_shape_changes
+      ~CubeTransit.get_time_period_numbers_from_cube_properties
+      ~CubeTransit.unpack_route_name
+   
+   
+
+   
+   
+   

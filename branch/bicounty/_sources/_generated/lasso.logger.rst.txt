@@ -1,0 +1,29 @@
+﻿lasso.logger
+============
+
+.. automodule:: lasso.logger
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      setupLogging
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
