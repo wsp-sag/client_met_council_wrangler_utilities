@@ -283,7 +283,9 @@ def determine_number_of_lanes(
     """
     osm_df = pd.read_csv(osm_lanes_attributes)
     osm_df = osm_df.rename(columns = {"min_lanes": "osm_min_lanes", "max_lanes": "osm_max_lanes"})
-
+    osm_df.loc[osm_df['oneWay'].str.contains('False'), 'osm_min_lanes'] = np.ceil(osm_df['osm_min_lanes'] / 2)
+    osm_df.loc[osm_df['oneWay'].str.contains('False'), 'osm_max_lanes'] = np.ceil(osm_df['osm_max_lanes'] / 2)
+    
     tam_df = pd.read_csv(tam_tm2_attributes)
     tam_df = tam_df[['shstReferenceId', 'lanes']].rename(columns = {"lanes": "tm2_lanes"})
 
