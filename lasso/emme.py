@@ -1,8 +1,10 @@
 """Setup Emme project, database (Emmebank) and import network data."""
 
+
 import os as _os
 from collections import defaultdict as _defaultdict
 from copy import deepcopy as _copy
+from pathlib import Path
 
 from pandas.core.frame import DataFrame
 
@@ -27,6 +29,13 @@ from pyproj import CRS
 from .roadway import ModelRoadwayNetwork
 from .parameters import Parameters
 from .logger import WranglerLogger
+
+try:
+    import ranch
+except ImportError:
+    WranglerLogger.warning("'Ranch' is not installed in this environment, if you wish to rebuild connectors when writing the emme network you will need to install ranch https://github.com/BayAreaMetro/Ranch")
+    ranch = None
+
 from .mtc import _is_express_bus, _special_vehicle_type
 
 from lasso import StandardTransit
@@ -46,20 +55,23 @@ def create_emme_network(
     include_transit: Optional[bool] =False,
     links_df: Optional[GeoDataFrame]=None,
     nodes_df: Optional[GeoDataFrame]=None,
+    shapes_df: Optional[GeoDataFrame]=None,
     name: Optional[str]="",
     path: Optional[str]="",
     write_drive_network: bool = False,
-    write_taz_drive_network: bool = False,
-    write_maz_drive_network: bool = False,
     write_maz_active_modes_network: bool = False,
     write_tap_transit_network: bool = False,
     write_taz_transit_network: bool = False,
     parameters: Union[Parameters, dict] = {},
     polygon_file_to_split_active_modes_network: Optional[str] = None,
-    polygon_variable_to_split_active_modes_network: Optional[str] = None
+    polygon_variable_to_split_active_modes_network: Optional[str] = None,
+    regenerate_connectors: Optional[bool] = False,
+    taz_zone_shapefile_path: Optional[str] = None,
+    maz_zone_shapefile_path: Optional[str] = None,
 ):
     """
     method that calls emme to write out EMME network from Lasso network
+
 
     Arguments:
         roadway_network: lasso roadway network object, which has the model network for writting out.
@@ -68,11 +80,10 @@ def create_emme_network(
         include_transit: should the emme network include transit, default to False
         links_df: model links database for writting out, if not given, use roadway_network
         nodes_df: model nodes database for writting out, if not given, use roadway_network
+        shape_df: model shapes data set for writing out, if not given use roadway_network
         name: scenario name prefix
         path: output dir for emme
         write_drive_network: boolean, True if writing out drive network
-        write_taz_drive_network: boolean, True if writing out TAZ scale drive network, without MAZ
-        write_maz_drive_network: boolean, True if writing out MAZ scale drive network, without TAZ
         write_maz_active_modes_network: boolean, True if writing out MAZ scale walk and bike network
         write_tap_transit_network: boolean, True if writing out TAP sclae transit network
         parameters: lasso parameters
@@ -80,6 +91,10 @@ def create_emme_network(
                                 due to emme's limitation on number of links and nodes
         polygon_variable_to_split_active_modes_network: unqiue key for each active modes subarea polygon, 
                                 will be used to name the emme file
+        regenerate_connectors: boolean, if True connectors will be regenerated using Ranch - Note Ranch must be installed
+                                to envoke this option https://github.com/wsp-sag/Ranch.git
+        taz_zone_shapefile_path: Path to shapefile containing taz level zones for generating taz centroid connectors
+        maz_zone_shapefile_path: Path to shapefile containing maz level zones for generating maz centroid connectors
 
     Return:
         None. Write out emme networks to the output dir
@@ -91,16 +106,20 @@ def create_emme_network(
     
     model_tables = {}
 
+
     if roadway_network:
         links_df = roadway_network.links_mtc_df.copy()
         nodes_df = roadway_network.nodes_mtc_df.sort_values("N").reset_index(drop=True).copy()
+        shapes_df = roadway_network.shapes_df.copy()
 
     elif (len(links_df)>0) & (len(nodes_df)>0):
         links_df = links_df.copy()
         nodes_df = nodes_df.sort_values("N").reset_index(drop=True).copy()
+        if shapes_df is not None:
+            shapes_df = shapes_df.copy()
 
     else:
-        msg = "Missing roadway network to write to emme, please specify either model_net or links_df and nodes_df."
+        msg = "Missing roadway network to write to emme, please specify either model_net or links_df and nodes_df"
         WranglerLogger.error(msg)
         raise ValueError(msg)
 
@@ -192,31 +211,12 @@ def create_emme_network(
         model_tables = prepare_table_for_drive_network(
             nodes_df=nodes_df,
             links_df=links_df,
-            parameters=parameters
-        )
-
-        setup = SetupEmme(model_tables, out_dir, _NAME, include_transit, parameters)
-        setup.run()
-
-    if write_taz_drive_network:
-        _NAME = "emme_taz_drive_network"
-        include_transit = False
-        model_tables = prepare_table_for_taz_drive_network(
-            nodes_df=nodes_df,
-            links_df=links_df,
-            parameters=parameters
-        )
-
-        setup = SetupEmme(model_tables, out_dir, _NAME, include_transit, parameters)
-        setup.run()
-
-    if write_maz_drive_network:
-        _NAME = "emme_maz_drive_network"
-        include_transit = False
-        model_tables = prepare_table_for_maz_drive_network(
-            nodes_df=nodes_df,
-            links_df=links_df,
-            parameters=parameters
+            shapes_df=shapes_df,
+            transit_network=transit_network,
+            parameters=parameters,
+            regenerate_connectors=regenerate_connectors,
+            taz_zone_shapefile_path=taz_zone_shapefile_path,
+            maz_zone_shapefile_path=maz_zone_shapefile_path,
         )
 
         setup = SetupEmme(model_tables, out_dir, _NAME, include_transit, parameters)
@@ -268,23 +268,102 @@ def create_emme_network(
         setup = SetupEmme(model_tables, out_dir, _NAME, include_transit, parameters)
         setup.run()
 
-def prepare_table_for_taz_drive_network(
-    nodes_df,
-    links_df,
-    parameters,
+#%%
+def extract_bus_shapes(transit_network: StandardTransit, route_type_bus_id:int = 3):
+    """Returns a list of Nodes that contain bus routes"""
+    
+    shapes_df = transit_network.feed["shapes"].copy()
+    trips_df = transit_network.feed["trips"].copy()
+    routes_df = transit_network.feed["routes"].copy()
+
+    bus_routes_df = routes_df.loc[routes_df["route_type"].isin([route_type_bus_id]), "route_id"]
+    bus_trips_df = trips_df.loc[trips_df["route_id"].isin(bus_routes_df), "shape_id"]
+    bus_shapes_df = shapes_df[shapes_df["shape_id"].isin(bus_trips_df)]
+    return bus_shapes_df
+
+#%%
+def tag_if_link_contains_bus(links_df: gpd.GeoDataFrame, gtfs_shape_bus_routes: gpd.GeoDataFrame):
+    """tags nodes where the starting node and the end node are bus route nodes"""
+    links_df = links_df.copy()
+    gtfs_shape_bus_routes = gtfs_shape_bus_routes.copy()
+
+    # links are defined as pairs of nodes, so get next node (this assumes order)
+    gtfs_shape_bus_routes["shape_id"] = pd.to_numeric(gtfs_shape_bus_routes["shape_id"])
+    gtfs_shape_bus_routes["shape_pt_sequence"] = pd.to_numeric(gtfs_shape_bus_routes["shape_pt_sequence"])
+    gtfs_shape_bus_routes = gtfs_shape_bus_routes.sort_values(by=["shape_id", "shape_pt_sequence"])
+
+    gtfs_shape_bus_routes["prev_node_id"] = gtfs_shape_bus_routes["shape_model_node_id"].shift(1)
+    
+    # since we are keeping previous node, the first pair in each sequence is nonsence
+    gtfs_shape_bus_routes = gtfs_shape_bus_routes[(gtfs_shape_bus_routes["shape_pt_sequence"] != 1)]
+    gtfs_shape_bus_routes = gtfs_shape_bus_routes.drop_duplicates(subset=["shape_model_node_id", "prev_node_id"])
+    gtfs_shape_bus_routes["has_bus_on_link"] = True
+    gtfs_shape_bus_routes["shape_model_node_id"] = pd.to_numeric(gtfs_shape_bus_routes["shape_model_node_id"])
+    gtfs_shape_bus_routes["prev_node_id"] = pd.to_numeric(gtfs_shape_bus_routes["prev_node_id"])
+
+    # We direction is important, if its not, there would need ot be a second merge
+    links_df = pd.merge(links_df, gtfs_shape_bus_routes[["shape_model_node_id", "prev_node_id", "has_bus_on_link"]], 
+        left_on=["A", "B"],
+        right_on=[ "prev_node_id", "shape_model_node_id"],
+        how="left"
+    ).drop(columns=["shape_model_node_id", "prev_node_id"])
+    links_df["has_bus_on_link"] = links_df["has_bus_on_link"].fillna(False)
+
+    return links_df
+
+    #%%
+def find_parent_ranch_dir(ranch_file_path: Union[Path, str]):
+    """
+    In Case __init__ file moves ect, we will take any file in the ranch directory and return the parent ranch dir
+    """
+    path = Path(ranch_file_path)
+    while True:
+        prev_path=path
+        path=path.parent
+        if path.name != "ranch" and prev_path.name == "ranch":
+            return prev_path
+        
+        if len(path.parts) == 1:
+            msg = f"Expected Ranch Directory above '{ranch_file_path}' but could not find directory"
+            raise RuntimeError(msg)
+
+def prepare_table_for_drive_network(
+    nodes_df: pd.DataFrame,
+    links_df: pd.DataFrame,
+    transit_network: StandardTransit,
+    shapes_df: Optional[GeoDataFrame],
+    parameters: Parameters,
+    maximum_ft: int=7,
+    regenerate_connectors: bool=False,
+    taz_zone_shapefile_path: Optional[str] = None,
+    maz_zone_shapefile_path: Optional[str] = None,
 ):
 
     """
-    prepare model table for taz-scale drive network, in which taz nodes are centroids
-    keep links that are drive_access == 1 and assignable
+    prepare model table for drive network (including taz and maz nodes), in which taz/maz nodes are centroids and 
+    connected to the remaining network. 
+    The conditions for a link to be kept in the network is if it meets any of the below conditions:
+     - ft <= 7
+     - links containing bus routes acording to transit_network.feed
+     - toll booths >= 1
+     - toll sag >= 1 
+     - link is a managed road - connector
 
     Arguments:
         nodes_df -- node database
         links_df -- link database
+        transit_network -- Standard Transit network containing bus route information
+        shapes_df -- shapes database
+        parameters -- emmebanke creation paramerters parameters
+        maximum_ft -- maximum Facility type to include 
+        regenerate_connectors -- Bool: option to regenerate connectors after the relevent links have been dropped 
+        taz_zone_shapefile_path -- path to shapefiles containing taz zones for centroid connectors 
+        maz_zone_shapefile_path -- path to shapefiles containing maz zones for centroid connectors 
     
     Return:
         dictionary of model network settings
     """
+
 
     model_tables = dict()
 
@@ -293,119 +372,97 @@ def prepare_table_for_taz_drive_network(
         nodes_df.N.isin(parameters.taz_N_list)
     ].to_dict('records')
 
-    model_tables["connector_table"] = links_df[
-        (links_df.A.isin(parameters.taz_N_list)) | (links_df.B.isin(parameters.taz_N_list))
-    ].to_dict('records')
+    # get the links where buses drive on the network
+    gtfs_shape_bus_routes = extract_bus_shapes(transit_network)
 
-    drive_links_df = links_df[
-        ~(links_df.A.isin(parameters.taz_N_list + parameters.maz_N_list)) & 
-        ~(links_df.B.isin(parameters.taz_N_list + parameters.maz_N_list)) &
-        ((links_df.drive_access == 1) & (links_df.assignable == 1))
-    ].copy()
-
-    model_tables["link_table"] = drive_links_df.to_dict('records')
-
-    drive_nodes_df = nodes_df[
-        (nodes_df.N.isin(drive_links_df.A.tolist()) + nodes_df.N.isin(drive_links_df.B.tolist()))
-    ].copy()
-
-    model_tables["node_table"] = drive_nodes_df.to_dict('records')
-
-    return model_tables
-
-def prepare_table_for_drive_network(
-    nodes_df,
-    links_df,
-    parameters,
-):
-
-    """
-    prepare model table for drive network, in which taz nodes are centroids
-    maz and tap nodes are included, but not as centroids
-    keep links that are drive_access == 1 and assignable == 1
-
-    Arguments:
-        nodes_df -- node database
-        links_df -- link database
+    links_df = tag_if_link_contains_bus(links_df, gtfs_shape_bus_routes)
     
-    Return:
-        dictionary of model network settings
-    """
+    # filter drive links by condition mentioned in the doc string
+    managed_nodes = list(set(links_df[links_df["managed"] == 1]["A"]) | set(links_df[links_df["managed"] == 1]["B"]))
+    links_df["managed_lane_connector"] = (links_df["ft"] == 8) & (links_df["A"].isin(managed_nodes) | links_df["B"].isin(managed_nodes))
 
-    model_tables = dict()
-
-    # use taz as centroids
-    model_tables["centroid_table"] = nodes_df[
-        nodes_df.N.isin(parameters.taz_N_list)
-    ].to_dict('records')
-
-    # taz connectors as centroid connectors
-    model_tables["connector_table"] = links_df[
-        (links_df.A.isin(parameters.taz_N_list)) | (links_df.B.isin(parameters.taz_N_list))
-    ].to_dict('records')
-
-    # links: not taz connectors, has to be drive, assignable, or maz links
-    # maz drive connectors are assignable
-    # tap connectors are non-drive, not assignable
     drive_links_df = links_df[
-        ~(links_df.A.isin(parameters.taz_N_list)) & 
-        ~(links_df.B.isin(parameters.taz_N_list)) &
         (
-            (links_df.drive_access == 1) & (links_df.assignable == 1)
+            # just Remove taz connectors, maz connectors / nodes will remain as regular nodes
+            ~(links_df.A.isin(parameters.taz_N_list)) & 
+            ~(links_df.B.isin(parameters.taz_N_list)) &
+            ( # ft <= 7 should be kept in the nework
+                (
+                    (links_df.ft <= maximum_ft) &
+                    (links_df.drive_access == 1) 
+                ) |
+                ( # is a tollsegment, should be kept within the network
+                    (links_df.tollseg != 0) |
+                    (links_df.tollbooth != 0)
+                ) 
+            )
+        ) | (
+            links_df["has_bus_on_link"] | 
+            links_df["managed_lane_connector"] | 
+            ((links_df["cntype"] == "MAZ") & (links_df.drive_access == 1)) # Maz is filtered out by links_df.fg <= maximum_ft 
         )
     ].copy()
- 
+
+    if not regenerate_connectors:
+        model_tables["connector_table"] = links_df[
+            (links_df.A.isin(parameters.taz_N_list)) | 
+            (links_df.B.isin(parameters.taz_N_list))
+        ].to_dict('records')
+    else:
+        # check ranch is installed
+        raise NotImplementedError("Currently Waiting On task Order 6 to finish implementation")
+        if ranch is None:
+            raise ImportError("package 'ranch' is not installed, please go to https://github.com/BayAreaMetro/Ranch for install instructions")
+        if shapes_df is None:
+            raise ValueError("shapes_df must be provided to regenerate connectors")
+        if taz_zone_shapefile_path is None:
+            raise ValueError("taz_zone_shapefile_path must be passed in when regenerate_connectors=True")
+        if maz_zone_shapefile_path is None:
+            raise ValueError("maz_zone_shapefile_path must be passed in when regenerate_connectors=True")
+
+        # regenerate connectors
+        ranch_dir = find_parent_ranch_dir(ranch.__file__)
+        ranch_params=ranch.Parameters(
+            ranch_base_dir=ranch_dir,
+        )
+        
+        drive_links_df = drive_links_df[drive_links_df["cntype"] != "MAZ"]
+        ranch_roadway = ranch.Roadway(nodes_df, drive_links_df.drop(columns=["index_left", "index_right"], errors="ignore"), shapes_df, ranch_params)
+        buid_taz_node_id
+        ranch_roadway.build_centroid_connectors(build_taz_active_modes=True, build_maz_drive=True, 
+            input_taz_polygon_file=taz_zone_shapefile_path, 
+            input_maz_polygon_file=maz_zone_shapefile_path, 
+        )
+
+
+        model_tables["connector_table"] = ranch_roadway.links_df[
+            (ranch_roadway.links_df.A.isin(parameters.taz_N_list)) | 
+            (ranch_roadway.links_df.B.isin(parameters.taz_N_list))
+        ].to_dict('records')
+
+        # add the new maz links back in 
+        drive_links_df = pd.concat(
+            [
+                drive_links_df, 
+                ranch_roadway.links_df[
+                    (ranch_roadway.links_df.A.isin(parameters.maz_N_list)) | 
+                    (ranch_roadway.links_df.B.isin(parameters.maz_N_list))
+                ]
+            ]
+        )
+
+
+
+    model_tables["link_table"] = drive_links_df.to_dict('records')
+
     drive_nodes_df = nodes_df[
         (nodes_df.N.isin(drive_links_df.A.tolist()) + nodes_df.N.isin(drive_links_df.B.tolist()))
     ].copy()
 
-    model_tables["link_table"] = drive_links_df.to_dict('records')
     model_tables["node_table"] = drive_nodes_df.to_dict('records')
 
     return model_tables
 
-def prepare_table_for_maz_drive_network(
-    nodes_df,
-    links_df,
-    parameters,
-):
-
-    """
-    prepare model table for maz-scale drive network, in which there are no centroids, drop taz nodes and connectors
-    keep links that are drive_access == 1 and assignable == 1
-
-    Arguments:
-        nodes_df -- node database
-        links_df -- link database
-    
-    Return:
-        dictionary of model network settings
-    """
-
-    model_tables = dict()
-
-    # no centroids, drop taz nodes and connectors
-
-    model_tables["centroid_table"] = []
-
-    model_tables["connector_table"] = []
-
-    drive_links_df = links_df[
-        ~(links_df.A.isin(parameters.taz_N_list)) & 
-        ~(links_df.B.isin(parameters.taz_N_list)) &
-        ((links_df.drive_access == 1) & (links_df.assignable == 1))
-    ].copy()
-
-    model_tables["link_table"] = drive_links_df.to_dict('records')
-
-    drive_nodes_df = nodes_df[
-        ~(nodes_df.N.isin(parameters.taz_N_list)) &
-        (nodes_df.N.isin(drive_links_df.A.tolist()) + nodes_df.N.isin(drive_links_df.B.tolist()))
-    ].copy()
-
-    model_tables["node_table"] = drive_nodes_df.to_dict('records')
-
-    return model_tables
 
 def prepare_table_for_maz_active_modes_network(
     nodes_df,
