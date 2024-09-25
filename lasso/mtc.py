@@ -13,6 +13,9 @@ from scipy.spatial import cKDTree
 from sklearn.cluster import KMeans
 from pyproj import CRS
 import shapely
+from shapely.geometry import Point, LineString
+import networkx as nx
+import osmnx as ox
 
 import network_wrangler
 from .parameters import Parameters
@@ -280,7 +283,9 @@ def determine_number_of_lanes(
     """
     osm_df = pd.read_csv(osm_lanes_attributes)
     osm_df = osm_df.rename(columns = {"min_lanes": "osm_min_lanes", "max_lanes": "osm_max_lanes"})
-
+    osm_df.loc[osm_df['oneWay'].str.contains('False'), 'osm_min_lanes'] = np.ceil(osm_df['osm_min_lanes'] / 2)
+    osm_df.loc[osm_df['oneWay'].str.contains('False'), 'osm_max_lanes'] = np.ceil(osm_df['osm_max_lanes'] / 2)
+    
     tam_df = pd.read_csv(tam_tm2_attributes)
     tam_df = tam_df[['shstReferenceId', 'lanes']].rename(columns = {"lanes": "tm2_lanes"})
 
@@ -1109,7 +1114,7 @@ def write_cube_fare_files(
     fare_rules_df = transit_network.feed.fare_rules.copy()
 
     # deflate 2015 fare to 2010 dollars
-    fare_attributes_df["price"] = fare_attributes_df["price"] * parameters.fare_2015_to_2010_deflator
+    fare_attributes_df["price"] = fare_attributes_df["price"] * parameters.fare_2015_to_2000_deflator
     fare_attributes_df["price"] = fare_attributes_df["price"].round(2)
 
     fare_df = pd.merge(
@@ -3041,3 +3046,241 @@ def calculate_county(
         )
 
         return roadway_network
+
+
+def num_of_walk_bike_loadpoint_per_centroid(existing_centroid_df):
+    """
+    decide number of loading point for walk and bike access per centroid
+    
+    logic: find 5 closest points to centroid
+    
+    return: 
+    dataframe
+    for each centroid, number of loading point needs to be generated.
+    
+    `source <https://github.com/BayAreaMetro/travel-model-two-networks/blob/main/notebooks/pipeline/methods.py>`
+    """
+    
+    num_loadpoint = existing_centroid_df[['N', 'X', 'Y']].copy()
+    num_loadpoint['osm_num_load'] = np.int(5)
+    num_loadpoint.rename(columns = {'N':'c'}, inplace = True)
+    
+    return num_loadpoint
+
+
+def find_new_load_point(abm_load_ref_df, all_node):
+    """
+    find the loading points in osm nodes
+    
+    input: osm node, loading point reference input
+    
+    output:  dataframe of pairs of centroid and loading point, with point geometry of loading point
+    
+    works in epsg = 26915
+
+    `source <https://github.com/BayAreaMetro/travel-model-two-networks/blob/main/notebooks/pipeline/methods.py>`
+    """
+    
+    all_node_gdf = all_node.copy()
+    
+    # all_node_gdf = all_node_gdf.to_crs(epsg = 26915)
+    all_node_gdf["X"] = all_node_gdf["geometry"].x
+    all_node_gdf["Y"] = all_node_gdf["geometry"].y
+    
+    inventory_node_df = all_node_gdf.copy()
+    inventory_node_ref = inventory_node_df[["X", "Y"]].values
+    tree_default = cKDTree(inventory_node_ref)
+    
+    new_load_point_gdf = gpd.GeoDataFrame()
+    
+    for i in range(len(abm_load_ref_df)):
+
+        point = abm_load_ref_df.iloc[i][['X', 'Y']].values
+        c_id = abm_load_ref_df.iloc[i]['c']
+        n_neigh = abm_load_ref_df.iloc[i]['osm_num_load']
+        
+        if "c" in all_node_gdf.columns:
+            inventory_node_df = all_node_gdf[all_node_gdf.c == c_id].copy().reset_index()
+            if len(inventory_node_df) == 0:
+                continue
+            else:
+                inventory_node_ref = inventory_node_df[["X", "Y"]].values
+                tree = cKDTree(inventory_node_ref)
+        
+        else:
+            inventory_node_df = all_node_gdf.copy()
+            tree = tree_default
+        
+        
+        dd, ii = tree.query(point, k = n_neigh)
+        if n_neigh == 1:
+            add_gdf = gpd.GeoDataFrame(inventory_node_df[['osm_node_id', "shst_node_id", "model_node_id", 'geometry']].iloc[ii])\
+                            .transpose().reset_index(drop = True)
+        else:
+            add_gdf = gpd.GeoDataFrame(inventory_node_df[['osm_node_id', "shst_node_id", "model_node_id", 'geometry']].iloc[ii])\
+                            .reset_index(drop = True)
+        add_gdf['c'] = int(abm_load_ref_df.iloc[i]['c'])
+        if i == 0:
+            new_load_point_gdf = add_gdf.copy()
+            
+        else:
+            new_load_point_gdf = new_load_point_gdf.append(add_gdf, ignore_index=True, sort=False)
+
+    return new_load_point_gdf.rename(columns = {'geometry' : 'geometry_ld'})
+
+
+def generate_centroid_connectors(run_type, node_gdf, existing_node_df):
+    """
+    calls function to generate loading point reference table, 
+    and calls function to find loading points
+    
+    build linestring based on pairs of centroid and loading point
+    
+    return centroid connectors and centroids
+
+    `source <https://github.com/BayAreaMetro/travel-model-two-networks/blob/main/notebooks/pipeline/methods.py>`
+    """
+
+    if (run_type == 'walk')|(run_type == 'bike'):
+        abm_load_ref_df = num_of_walk_bike_loadpoint_per_centroid(existing_node_df)
+
+    new_load_point_gdf = find_new_load_point(abm_load_ref_df, node_gdf)
+    new_load_point_gdf = pd.merge(new_load_point_gdf,
+                                existing_node_df[['N', 'X', 'Y']],
+                                how = 'left', 
+                                left_on = 'c',
+                                right_on = 'N')
+    new_load_point_gdf['geometry_c'] = [Point(xy) for xy in zip(new_load_point_gdf['X'], new_load_point_gdf['Y'])]
+    new_load_point_gdf.drop(['N', 'X', 'Y'], axis = 1, inplace = True)
+
+    #inbound cc
+    new_cc_gdf = new_load_point_gdf.copy()
+    new_cc_gdf['geometry'] = [LineString(xy) for xy in zip(new_cc_gdf['geometry_ld'], new_cc_gdf['geometry_c'])]
+    new_cc_gdf["fromIntersectionId"] = new_cc_gdf['shst_node_id']
+    new_cc_gdf["shstGeometryId"] = range(1, 1+len(new_cc_gdf))
+    new_cc_gdf["shstGeometryId"] = new_cc_gdf["shstGeometryId"].apply(lambda x: "cc" + str(x))
+    new_cc_gdf["id"] = new_cc_gdf["shstGeometryId"]
+    new_cc_gdf = new_cc_gdf.rename(columns = {'model_node_id' : 'A', 
+                                            'c' : 'B',
+                                            "osm_node_id" : "u"})
+    
+    #remove duplicates
+    new_cc_gdf.drop_duplicates(['A', 'B'], inplace = True)
+
+    return new_cc_gdf
+
+
+def create_nonmotor_connectors(
+    run_type: str='walk',
+    nodes: gpd.GeoDataFrame = None,
+    zone_nodes: gpd.GeoDataFrame = None
+) -> gpd.GeoDataFrame:
+
+    # build connectors
+    zone = zone_nodes.copy()
+    zone['N'] = zone['model_node_id']
+    zone['X'] = zone['geometry'].x
+    zone['Y'] = zone['geometry'].y
+
+    non_zone_nodes = nodes[~nodes['model_node_id'].isin(zone_nodes['model_node_id'])].reset_index(drop=True)
+    inbound_cc = generate_centroid_connectors(run_type=run_type, node_gdf=non_zone_nodes, existing_node_df=zone)
+    inbound_cc = inbound_cc[['A', 'B', 'geometry_ld', 'geometry_c', 'geometry']]
+    outbound_cc = inbound_cc.copy().rename(columns={'A': 'B', 'B': 'A'})
+    outbound_cc['geometry'] = [LineString(xy) for xy in zip(outbound_cc['geometry_c'], outbound_cc['geometry_ld'])]
+    connector_links = gpd.GeoDataFrame(pd.concat([inbound_cc[['A', 'B', 'geometry']], outbound_cc[['A', 'B', 'geometry']]]), geometry='geometry')
+
+    # add attributes
+    connector_links['walk_access'] = 1
+    connector_links['bike_access'] = 1
+
+    return connector_links[['A', 'B', 'walk_access', 'bike_access', 'geometry']]
+
+
+def build_nonmotor_net_graph(
+    run_type: str='walk',
+    nodes: gpd.GeoDataFrame=None,
+    links: gpd.GeoDataFrame=None
+) -> nx.MultiDiGraph:
+    # filter out network links & nodes that are available by the specified mode
+    access_var = f'{run_type}_access'
+    nonmotor_nodes = nodes[nodes[access_var] == 1].copy().reset_index(drop=True)
+    nonmotor_links = links[links[access_var] == 1].copy().reset_index(drop=True)
+
+    # prep for graph building
+    nonmotor_links['u'] = nonmotor_links['A']
+    nonmotor_links['v'] = nonmotor_links['B']
+    nonmotor_links['key'] = nonmotor_links.index + 1
+    nonmotor_links = nonmotor_links.set_index(['u', 'v', 'key'])
+    nonmotor_nodes['x'] = nonmotor_nodes['geometry'].x
+    nonmotor_nodes['y'] = nonmotor_nodes['geometry'].y
+
+    # build network graph
+    WranglerLogger.info(f'Build nonmotorize network graph for mode: {run_type}')
+    net_graph = ox.graph_from_gdfs(nonmotor_nodes, nonmotor_links)
+
+    return net_graph
+
+
+def create_nonmotor_skim(
+    roadway_network=None,
+    run_type: str='walk',
+    max_zone_num: int=None
+) -> np.array:
+    """ Create nonmotorized (walk or bike) distance skim based on NetworkX shortest path.
+
+    Make bike/ped centroid connectors using MTC algorithm to enable shortest path tracing.
+    In addition, only return skim values for zones within 3 miles for walk and 20 miles for bike.
+
+    Args:
+        run_type: Nonmotorize mode. Either walk or bike
+        max_zone_num: Largest zone number. (Assume zone numbers take the range 1 ~ max_zone_num)
+    
+    Return:
+        A n x n (zone x zone) array with shortest path distance values.
+    """
+    if run_type == 'walk':
+        max_mile = 3
+    elif run_type == 'bike':
+        max_mile = 20
+    
+    # reproject links and nodes to a crs that use feet as base unit
+    WranglerLogger.info('Reproject nodes and links for distance calculation')
+    nodes = roadway_network.nodes_df.copy().to_crs(epsg=2230)
+    links = roadway_network.links_df.copy().to_crs(epsg=2230)
+    links['distance'] = links['geometry'].length
+    links['connector'] = 0
+
+    # identify zone nodes
+    zone_nodes = nodes.loc[nodes['model_node_id']<=max_zone_num, ['model_node_id', 'geometry']].copy().reset_index(drop=True)
+
+    # create connector links
+    WranglerLogger.info('Create nonmotorize connectors')
+    connector_links = create_nonmotor_connectors(run_type=run_type, nodes=nodes, zone_nodes=zone_nodes)
+
+    # set connectors' distance to max mile distance (they should nots be used as intermediate links)
+    connector_links['distance'] = max_mile * 5280
+    connector_links['connector'] = 1
+
+    # add connector links to the whole network links df
+    links = pd.concat([links, connector_links]).reset_index(drop=True)
+    
+    # build network graph that can be access by the specified run_type
+    net_graph = build_nonmotor_net_graph(run_type=run_type, nodes=nodes, links=links)
+
+    # for each zone, build subgraph that's within 3 * max allowed mile distance (counting 2 centroid connectors)
+    skim_mat = np.zeros((max_zone_num, max_zone_num)) # initialize skim matrix
+    zone_list = sorted(zone_nodes['model_node_id'].to_list())
+    for from_zone in zone_list:
+        WranglerLogger.info(f'Build {run_type} skim for zone {from_zone}')
+        subgraph = nx.ego_graph(net_graph, from_zone, radius=5280*3*max_mile, distance='distance')
+        dest_zone_nodes_in_subgraph = [node for node in subgraph.nodes() if node <= max_zone_num and node != from_zone]
+        WranglerLogger.info(f'# of destination zone within buffer file from zone {from_zone}: {len(dest_zone_nodes_in_subgraph)}')
+
+        for to_zone in dest_zone_nodes_in_subgraph:
+            # The result distance is in feet and include beginning/ending connectors (both are set to have max allowed distance)
+            # True distance in mile will be:  (distance - 2 * buffer_mile*5280)/5280
+            path_dist = nx.shortest_path_length(subgraph, from_zone, to_zone, weight='distance')
+            actual_dist = (path_dist - 2*max_mile*5280)/5280
+            skim_mat[from_zone-1, to_zone-1] = actual_dist
+
+    return skim_mat

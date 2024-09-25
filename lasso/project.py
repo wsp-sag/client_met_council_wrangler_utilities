@@ -127,7 +127,7 @@ class Project(object):
             raise ValueError(msg)
 
         if base_roadway_network != None:
-            self.determine_roadway_network_changes_compatability(
+            self.determine_roadway_network_changes_compatibility(
                 self.base_roadway_network, 
                 self.roadway_link_changes,
                 self.roadway_node_changes, 
