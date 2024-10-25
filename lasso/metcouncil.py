@@ -1479,8 +1479,13 @@ def add_rail_links_and_nodes(
 
 def add_rail_ae_connections(
     roadway_network, 
-    parameters
+    parameters,
+    exclude_rail_node_id=None
 ):
+    
+    if exclude_rail_node_id is None:
+        exclude_rail_node_id = []
+
     """
     add walk access and egress connectors to rail stations
     """
@@ -1490,6 +1495,9 @@ def add_rail_ae_connections(
         roadway_network.nodes_df.crs = CRS('epsg:4269')
 
     rail_nodes_df = roadway_network.nodes_df[roadway_network.nodes_df.rail_only == 1].copy()
+    
+    WranglerLogger.info(f"Exclude rail node id: {exclude_rail_node_id}")
+    rail_nodes_df = rail_nodes_df[~rail_nodes_df['model_node_id'].isin(exclude_rail_node_id)]
 
     drive_nodes_df = roadway_network.nodes_df[
         (roadway_network.nodes_df.drive_access == 1) & 
